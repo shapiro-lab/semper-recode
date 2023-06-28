@@ -1,4 +1,4 @@
-# semper-recode
+# 🔬 semper-recode
 
 ## Introduction
 
@@ -13,8 +13,16 @@ GeneExpressPy is a Python package designed for computational biologists and gene
 
 ## Installation
 
-GeneTuner can be installed via pip using the following command:
+GeneExpressPy can be installed via pip using the following command:
 
 ```shell
 pip install GeneExpressPy
+```
+
+Alternatively
+
+```shell
+git clone https://github.com/ishaanjdev/semper-recode.git
+cd GeneExpressPy
+pip install .
 ```
