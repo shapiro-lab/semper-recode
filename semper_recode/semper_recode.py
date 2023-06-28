@@ -9,13 +9,13 @@ import pandas as pd
 import numpy as np
 import re
 from collections import Counter
-import seaborn as sns
-import matplotlib.pyplot as plt
+# import seaborn as sns
+# import matplotlib.pyplot as plt
 import itertools
 from itertools import combinations_with_replacement
 from itertools import product
 from Bio.Seq import Seq
-import ishaan_utils
+# import ishaan_utils
 
 class BioSeq:
     def __init__(self):
@@ -24,19 +24,19 @@ class BioSeq:
 
     def load_data(self):
         # Position weight matrix
-        pwm_df = pd.read_csv('/content/drive/MyDrive/Caltech Connection/package_materials/noderer-dinuc-pwm.txt', delimiter='\t', skiprows=1)
+        pwm_df = pd.read_csv('../data/noderer-dinuc-pwm.txt', delimiter='\t', skiprows=1)
         pwm_df['sequence'] = pwm_df['sequence'].str.replace('U', 'T')
         pwm_df = pwm_df.sort_values(by=['efficiency'], ascending=True)
         pwm_df = pwm_df.reset_index(drop=True)
 
         # Amino acids (full-name, 3-letter, 1-letter)
-        aa_chart = pd.read_csv('/content/drive/MyDrive/Caltech Connection/package_materials/amino-acid-codes.csv')
+        aa_chart = pd.read_csv('../data/amino-acid-codes.csv')
         aa_chart['1-letter'] = np.where(aa_chart['1-letter'] == 'STOP', '*', aa_chart['1-letter'])
         one_letter_codes = list(aa_chart['1-letter'].unique())
 
 
         # Codon chart (merge codon chart with aa_chart)
-        codon_usage = pd.read_csv('/content/drive/MyDrive/Caltech Connection/package_materials/nuclear_codon_statistics.tsv', delimiter='\t', skiprows=8)
+        codon_usage = pd.read_csv('../data/nuclear_codon_statistics.tsv', delimiter='\t', skiprows=8)
         codon_usage = codon_usage.merge(aa_chart, how='right', left_on='Amino acid', right_on='3-letter')
         codon_usage = codon_usage.sort_values(by=['1-letter', 'Fraction'], ascending=[True, False])
         codon_usage = codon_usage.reset_index(drop=True)
@@ -44,7 +44,7 @@ class BioSeq:
         # Create dictionary of all codon that produce the same amino acid ex: {'A' : {'GCC', 'GCT', 'GCA', 'GCG'}}
         codon_dict = {}
         for aa in one_letter_codes:
-        codon_dict[aa] = dict(codon_usage.loc[codon_usage['1-letter'] == aa, ['CODON', 'Fraction']].values)
+            codon_dict[aa] = dict(codon_usage.loc[codon_usage['1-letter'] == aa, ['CODON', 'Fraction']].values)
 
         # List of start codons
         start_codon = ['AUG', 'ATG', 'GUG', 'UUG']
@@ -159,9 +159,7 @@ class BioSeq:
         print(f"Missing ({(100-found_percent):.2f}%): {', '.join(missing_elements)}\n")
 
         for each in groups:
-        print(each, "\n")
+            print(each, "\n")
 
         return filtered.DataFrame
 
-# Example usage
-explorer = BioSeq()
