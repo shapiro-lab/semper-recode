@@ -163,5 +163,5 @@ class BioSeq:
 
         return filtered.DataFrame
 
-    # Example usage
-    explorer = BioSeq()
+# Example usage
+explorer = BioSeq()
