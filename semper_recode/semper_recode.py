@@ -25,13 +25,14 @@ class SemperRecode:
 
         Parameters
         ----------
-        user_seq : str, optional
+        user_seq : str or Seq object, optional
             User-defined sequence, by default None. In case user want to tune single 
             sequence instead of importing a whole FASTA file
         current_path : str
             File path to user's data which will be use to append to file names when file path is required
         input_file_path : str
             File path to user's input fasta file
+
         """
         self.start_codon = ['AUG', 'ATG', 'GUG', 'UUG'] # Use in find_in_frame()
         self.four_letter_codes = None # Use in filtered_sequence()
@@ -94,18 +95,18 @@ class SemperRecode:
                 sequence = str(record.seq)
                 modified_sequences.append(self.modify_TIS(sequence))
 
-        export_file_name = input("Enter the name of export file")
-        self.to_fasta(self, modified_sequences, export_file_name)   
-
         return modified_sequences
 
     def modify_TIS(self, sequence):
         '''
-        Takes in sequence (str) and return modified sequence with lower TIS efficiency
+        Takes in sequence (str or Seq object) and return modified sequence with lower TIS efficiency
 
-        Arguments:
-            sequence (str)
-        Return:
+        Parameters
+        ----------
+            sequence : str or Seq object
+
+        Returns
+        -------
             modified_sequence (str)
         '''
 
@@ -120,7 +121,7 @@ class SemperRecode:
 
         Returns
         -------
-        list
+        pos : list
             A list of integers representing the indices of in-frame AUG codons in the sequence.
 
         """
@@ -169,6 +170,19 @@ class SemperRecode:
         '''
         with open(output_file_name, 'w') as file:
             SeqIO.write(output, file, 'fasta')
+        
+        '''
+        Output: 
+        >Sequence1
+        ATCGATCGATCG
+
+        >Sequence2
+        GCTAGCTAGCTA
+
+        >Sequence3
+        TGCAATGCAATG
+        '''
+        
 
     def filtered_sequence(self, efficiency):
         """
