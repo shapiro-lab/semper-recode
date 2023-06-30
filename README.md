@@ -1,8 +1,8 @@
-# 🔬 semper-recode
+# 🔬 Semper Recode
 
 ## Introduction
 
-GeneExpressPy is a Python package designed for computational biologists and genetic engineers working with gene expression modulation. This package facilitates the detection of internal start codons (TIS) within a gene sequence and allows for tuning gene expression by replacing the TIS with a sequence that minimizes expression efficiency.
+SemperRecode is a Python package designed for computational biologists and genetic engineers working with gene expression modulation. This package facilitates the detection of internal start codons (TIS) within a gene sequence and allows for tuning gene expression by replacing the TIS with a sequence that minimizes expression efficiency.
 
 ## Features
 
@@ -13,16 +13,16 @@ GeneExpressPy is a Python package designed for computational biologists and gene
 
 ## Installation
 
-GeneExpressPy can be installed via pip using the following command:
+SemperRecode can be installed via pip using the following command:
 
 ```shell
-pip install GeneExpressPy
+pip install SemperRecode
 ```
 
 Alternatively
 
 ```shell
 git clone https://github.com/ishaanjdev/semper-recode.git
-cd GeneExpressPy
+cd SemperRecode
 pip install .
 ```
