@@ -15,11 +15,12 @@ from itertools import product
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from Bio import SeqIO
+import os
 
 # import ishaan_utils
 
 class SemperRecode:
-    def __init__(self, user_seq = None, current_path = "../data/", input_file_path = None):
+    def __init__(self, user_seq = None, current_path = "data/", input_file_path = None):
         """
         Initializes the SemperRecode object.
 
@@ -35,7 +36,7 @@ class SemperRecode:
 
         """
         self.start_codon = ['AUG', 'ATG', 'GUG', 'UUG'] # Use in find_in_frame()
-        self.four_letter_codes = None # Use in filtered_sequence()
+        self.four_letter_codes = [] # Use in filtered_sequence()
         self.master_df = None
         self.load_data(current_path)
         self.input_file = input_file_path # Path to the input fasta file
@@ -62,11 +63,15 @@ class SemperRecode:
 
         """
         # Master dataframe
-        self.master_df = pd.read_csv(path + 'master_df_os_2023.csv')
+        master_df_path = os.path.join(path, 'master_df_os_2023.csv')
+        if not os.path.exists(master_df_path):
+            raise FileNotFoundError(f"Master dataframe file not found: {master_df_path}")
         
+        self.master_df = pd.read_csv(path + 'master_df_os_2023.csv')
+        self.master_df = self.master_df.drop(columns="sequence") 
+
         # Four letters codes
-        with open(path + 'four_letter_codes.pkl', 'rb') as file:
-            self.four_letter_codes = pickle.load(file)
+        self.four_letter_codes = list(self.master_df['4-letters'].unique())  # Get unique four-letter codes from master_df
 
     def process_sequence(self, file_path):
         """
@@ -91,15 +96,17 @@ class SemperRecode:
         modified_sequences = []
 
         with open(file_path, 'r') as file:
-            for record in SeqIO.parse(file, 'fasta'):
+            for record in SeqIO.parse(file, 'fasta'): # Parsing line by line
                 sequence = str(record.seq)
-                modified_sequences.append(self.modify_TIS(sequence))
+                replace_sequence = self.modify_TIS(sequence)
+                modified_sequences.append(replace_sequence)
 
         return modified_sequences
 
     def modify_TIS(self, sequence):
         '''
-        Takes in sequence (str or Seq object) and return modified sequence with lower TIS efficiency
+        Takes in sequence (str or Seq object) and return modified sequence
+        with lower TIS efficiency (str ot Seq object)
 
         Parameters
         ----------
@@ -109,6 +116,38 @@ class SemperRecode:
         -------
             modified_sequence (str)
         '''
+        index = self.find_in_frame(sequence) # Get the indices of AUG(s)
+        new_seq = []
+
+        for pos in index:
+            #Ignore the first AUG
+            if pos != 0:
+                internal_TIS_seq = Seq(sequence[pos-6:pos+5])
+                aa4 = Seq(sequence[pos-6:pos+6]).translate()
+
+
+
+
+    def efficiency_level(self, sequence):
+        '''
+        Takes in sequence and return efficiency level
+
+        Parameters
+        ----------
+        sequence : str or Seq obj
+            The input sequence to find efficiency level.
+        
+        Returns
+        -------
+        eff : int
+            An interger represent the efficiency level of the sequence when
+            being compared with the master dataframe
+
+        '''
+        condition = self.master_df["tis-sequence"] == sequence
+        target_df = self.master_df[condition]
+
+        return target_df['efficiency']
 
     def find_in_frame(self, sequence):
         """
@@ -135,7 +174,7 @@ class SemperRecode:
                 pos.append(i)
 
         return pos
-
+    
     def to_fasta(self, sequence, output_file_name):
         '''
         Takes in a list of modified sequences and converts them back to FASTA format for exporting to users.
