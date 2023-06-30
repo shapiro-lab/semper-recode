@@ -18,14 +18,50 @@ from Bio import SeqIO
 
 # import ishaan_utils
 
-class SemperCode:
+class SemperRecode:
     def __init__(self, user_seq = None):
-        self.pwm_df, self.aa_chart, self.codon_usage, self.start_codon, self.codon_dict, self.four_letter_codes, self.master_df = None, None, None, None, None, None, None
+        """
+        Initializes the SemperRecode object.
+
+        Parameters
+        ----------
+        user_seq : str, optional
+            User-defined sequence, by default None. In case user want to tune single sequence instead of importing a whole FASTA file
+
+        Returns
+        -------
+        None
+
+        Raises
+        ------
+        None
+        """
+        self.pwm_df = None
+        self.aa_chart = None
+        self.codon_usage = None
+        self.start_codon = None
+        self.codon_dict = None
+        self.four_letter_codes = None
+        self.master_df = None
+        self.start_codon = None
         self.load_data()
-        self.start_codon = ['AUG', 'ATG', 'GUG', 'UUG']
+        
         self.seq = Seq(user_seq) if user_seq is not None else 'ATGCTGACGGTAUGGACTTACCTGTATGCGTGCTAAATGCTAAGGCTGGTGCCGACCGGACCGTTGGGAGCGCTGTTGACCGGATGCTAAAGGGCCCGAGTCTTGTAGTACCGGACTTAAATGCGTTGTTTGACACCTGTT'
 
     def load_data(self):
+        """
+        Loads data required for the analysis. Reads various data files and initializes necessary attributes.
+
+        Returns
+        -------
+        None
+
+        Raises
+        ------
+        FileNotFoundError
+            If any of the required data files are not found.
+
+        """
         # Position weight matrix
         self.pwm_df = pd.read_csv('../data/pwm_df.csv') # Position Weight Matrix
 
@@ -36,6 +72,7 @@ class SemperCode:
         self.codon_usage = pd.read_csv('../data/codon_usage.csv')
 
         # List of start codons
+        self.start_codon = ['AUG', 'ATG', 'GUG', 'UUG']
 
         # Master dataframe
         self.master_df = pd.read_csv('../data/master_df_os_2023.csv')
@@ -49,12 +86,25 @@ class SemperCode:
             self.codon_dict = pickle.load(file)
 
     def process_sequence(self, file_path):
-        '''
-        Takes in fasta file path and return the modified sequence with lower efficiency (if possible)
+        """
+        Takes in a fasta file path and returns the modified sequence with lower efficiency (if possible).
 
-        Return:
-            Modiefied sequence (.fasta)
-        '''
+        Parameters
+        ----------
+        file_path : str
+            Path to the input fasta file.
+
+        Returns
+        -------
+        list
+            List of modified sequences of the input file.
+
+        Raises
+        ------
+        FileNotFoundError
+            If the file_path does not exist.
+
+        """
         modified_sequences = []
 
         with open(file_path, 'r') as file:
@@ -74,9 +124,20 @@ class SemperCode:
         '''
 
     def find_in_frame(self, sequence):
-        '''
-        Takes in sequence (str) and return the list of index in which the AUG is found
-        '''
+        """
+        Takes in a sequence (str) and returns a list of indices where the AUG codon is found.
+
+        Parameters
+        ----------
+        sequence : str
+            The input sequence to search for AUG codons.
+
+        Returns
+        -------
+        list
+            A list of integers representing the indices of in-frame AUG codons in the sequence.
+
+        """
         pos = []  # position(s) of in-frame AUG in the string (sequence)
 
         # Loop through codon by codon (start from 0, end at last codon, increase by 3)
@@ -90,13 +151,18 @@ class SemperCode:
 
     def to_fasta(self, sequence, output_file_name):
         '''
-        Takes in a list of modified sequence and convert them back to fasta to export to users
-        
-        Arguments:
-            Sequence (list) : modified list we wish to convert to fasta file
-        
-        Return:
-            Fasta file (.fasta)
+        Takes in a list of modified sequences and converts them back to FASTA format for exporting to users.
+
+        Parameters
+        ----------
+        sequence : list
+            The modified list of sequences to be converted to a FASTA file.
+        output_file_name : str
+            The desired name of the output FASTA file.
+
+        Returns
+        -------
+        None
 
         '''
         output = []
@@ -135,6 +201,7 @@ class SemperCode:
         -------
         pd.DataFrame
             A DataFrame merging the combinations of nucleotide sequences with the PWM samples.
+        
         """
 
         aa_list_0 = list(self.codon_dict[aa_combo[0]].keys())
