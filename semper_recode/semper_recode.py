@@ -19,21 +19,25 @@ from Bio import SeqIO
 # import ishaan_utils
 
 class SemperRecode:
-    def __init__(self, user_seq = None, path = "../data/"):
+    def __init__(self, user_seq = None, current_path = "../data/", input_file_path = None):
         """
         Initializes the SemperRecode object.
 
         Parameters
         ----------
         user_seq : str, optional
-            User-defined sequence, by default None. In case user want to tune single sequence instead of importing a whole FASTA file
-        path : str
-            Path to user's data which will be use to append to file names when file path is required
+            User-defined sequence, by default None. In case user want to tune single 
+            sequence instead of importing a whole FASTA file
+        current_path : str
+            File path to user's data which will be use to append to file names when file path is required
+        input_file_path : str
+            File path to user's input fasta file
         """
         self.start_codon = ['AUG', 'ATG', 'GUG', 'UUG'] # Use in find_in_frame()
         self.four_letter_codes = None # Use in filtered_sequence()
         self.master_df = None
-        self.load_data(path)
+        self.load_data(current_path)
+        self.input_file = input_file_path # Path to the input fasta file
         self.seq = Seq(user_seq) if user_seq is not None else 'ATGCTGACGGTAUGGACTTACCTGTATGCGTGCTAAATGCTAAGGCTGGTGCCGACCGGACCGTTGGGAGCGCTGTTGACCGGATGCTAAAGGGCCCGAGTCTTGTAGTACCGGACTTAAATGCGTTGTTTGACACCTGTT'
     
     def load_data(self, path):
@@ -43,7 +47,8 @@ class SemperRecode:
         Parameters
         ----------
         path : str
-            User-defined sequence, by default None. In case user want to tune single sequence instead of importing a whole FASTA file
+            User-defined sequence, by default None. In case user want to tune single sequence 
+            instead of importing a whole FASTA file
 
         Returns
         -------
@@ -220,6 +225,9 @@ class SemperRecode:
 
         Raises
         ------
+        ValueError
+            If the given sequence doesn't have replacing sequence with efficiency lower
+            than the input efficiency level.
 
 
         Returns
