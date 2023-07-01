@@ -1,12 +1,10 @@
 # !/usr/bin/env python
 
 """Tests for `semper_recode` package."""
-from semper_recode.semper_recode import SemperRecode 
+from semper_recode.semper_recode import SemperRecode # Import SemperRecode class
+import pytest
 
-# !/usr/bin/env python
-
-"""Tests for `semper_recode` package."""
-from semper_recode.semper_recode import SemperRecode 
+# ================== TEST FIND_IN_FRAME ==================
 
 def test_find_in_frame():
     # In-frame AUGs
@@ -55,5 +53,19 @@ def test_load_data_with_existing_files():
     obj = SemperRecode(current_path=current_path)
     assert obj.master_df is not None
 
-# =================== CONSTRUCTOR =======================
+# ============= TEST EFFICIENCY_LEVEL =============
 
+def test_efficiency_level_with_exist_sequence():
+    obj = SemperRecode()
+    assert(obj.efficiency_level("CATTGTATGCT") == 12)
+    assert(obj.efficiency_level("AAACGTATGGG") == 62)
+    assert(obj.efficiency_level("ATTAGAATGAC") == 95)
+    assert(obj.efficiency_level("CCTATGATGTA") == 102)
+    assert(obj.efficiency_level("TTCATCATGCA") == 150)
+    
+def test_efficiency_level_with_non_exist_sequence():
+    obj = SemperRecode()
+
+    # ValueError is expected to raise as the sequence doesn't exist in master_df
+    with pytest.raises(ValueError):
+        obj.efficiency_level("CCCTGTACGCT")

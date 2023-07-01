@@ -116,17 +116,37 @@ class SemperRecode:
         -------
             modified_sequence (str)
         '''
+        new_seq = list(sequence)
         index = self.find_in_frame(sequence) # Get the indices of AUG(s)
-        new_seq = []
+        df = self.master_df
+
+        '''
+        Iterate through the length of the sequence (len(sequence)) and if the index in found in
+        index (list of positions from find_in_frame function), find a sequence with lower efficiency,
+        else, concatnate the old sequence to the output list (new_seq)
+        '''
 
         for pos in index:
             #Ignore the first AUG
+            # Iterate through
             if pos != 0:
                 internal_TIS_seq = Seq(sequence[pos-6:pos+5])
                 aa4 = Seq(sequence[pos-6:pos+6]).translate()
 
+                # Get the current efficiency level 
+                current_eff = self.efficiency_level(internal_TIS_seq)
 
+                filtered = df[df['4-letters'] == str(aa4)]
+                new_eff = filtered['efficiency'].iloc[0]
 
+                '''
+                If a new sequence with a lower efficiency is found,
+                replace the sequence in the string
+                '''
+                if(int(new_eff) < current_eff):
+                    new_seq[pos-6:pos+6] = filtered["4-codons"][0]
+
+        return ''.join(new_seq)
 
     def efficiency_level(self, sequence):
         '''
@@ -144,10 +164,18 @@ class SemperRecode:
             being compared with the master dataframe
 
         '''
-        condition = self.master_df["tis-sequence"] == sequence
-        target_df = self.master_df[condition]
+        df = self.master_df
 
-        return target_df['efficiency']
+        '''
+        Find the matching row in master_df with the same value in tis-sequence
+        as the input sequence 
+        '''
+        match = df[df["tis-sequence"] == str(sequence)]
+        if match.empty:
+            # No matching is found
+            raise ValueError(f"The sequence {sequence} is not found in the dataframe")
+
+        return match['efficiency'].iloc[0]
 
     def find_in_frame(self, sequence):
         """
@@ -223,7 +251,7 @@ class SemperRecode:
         '''
         
 
-    def filtered_sequence(self, efficiency):
+    def filtered_sequence_eff(self, efficiency):
         """
         Takes in efficiency level input and finds the sequences in the dataframe by filtering,
         then displays all the possible sequences that have an efficiency lower than the given value
