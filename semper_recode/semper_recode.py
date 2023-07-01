@@ -125,11 +125,9 @@ class SemperRecode:
         index (list of positions from find_in_frame function), find a sequence with lower efficiency,
         else, concatnate the old sequence to the output list (new_seq)
         '''
-
         for pos in index:
-            #Ignore the first AUG
-            # Iterate through
-            if pos != 0:
+            #Ignore the first and last AUG
+            if pos != 0 and pos != len(sequence) - 3:
                 internal_TIS_seq = Seq(sequence[pos-6:pos+5])
                 aa4 = Seq(sequence[pos-6:pos+6]).translate()
 
