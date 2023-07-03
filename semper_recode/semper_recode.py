@@ -126,7 +126,7 @@ class SemperRecode:
         else, concatnate the old sequence to the output list (new_seq)
         '''
         for pos in index:
-            #Ignore the first and last AUG
+            # Ignore the first and last AUG
             if pos != 0 and pos != len(sequence) - 3:
                 internal_TIS_seq = Seq(sequence[pos-6:pos+5])
                 aa4 = Seq(sequence[pos-6:pos+6]).translate()
@@ -139,10 +139,11 @@ class SemperRecode:
 
                 '''
                 If a new sequence with a lower efficiency is found,
-                replace the sequence in the string
+                replace the sequence in the string. 
+                Else, the sequence remain unchanged
                 '''
                 if(int(new_eff) < current_eff):
-                    new_seq[pos-6:pos+6] = filtered["4-codons"][0]
+                    new_seq[pos-6:pos+6] = filtered["4-codons"].iloc[0]
 
         return ''.join(new_seq)
 
@@ -169,6 +170,7 @@ class SemperRecode:
         as the input sequence 
         '''
         match = df[df["tis-sequence"] == str(sequence)]
+        
         if match.empty:
             # No matching is found
             raise ValueError(f"The sequence {sequence} is not found in the dataframe")

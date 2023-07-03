@@ -76,17 +76,16 @@ def test_efficiency_level_with_non_exist_sequence(obj):
 # ============= TEST MODIFY_TIS =============
 
 def test_modify_TIS_with_exist_sequence(obj):
-    assert(obj.modify_TIS("CACTGCATGTTA") == "CATTGTATGCTG") # 34 -> 12
-    assert(obj.modify_TIS("AUGCACTGCATGTTA") == "AUGCATTGTATGCTG") # The first AUG is expected to remain the same 
-    assert(obj.modify_TIS("CACTGCATGTTAATG") == "CATTGTATGCTGATG") # The last AUG is expected to remain the same
+    assert obj.modify_TIS("CACTGCATGTTA") == "CATTGTATGCTG"  # 34 -> 12
+    assert obj.modify_TIS("AUGCACTGCATGTTA") == "AUGCATTGTATGCTG"  # The first AUG is expected to remain the same 
+    assert obj.modify_TIS("CACTGCATGTTAATG") == "CATTGTATGCTGATG"  # The last AUG is expected to remain the same
+    assert obj.modify_TIS("AATGAAATGCTG") == "AATGAGATGCTG"  # 82 -> 80
 
-# def test_modify_TIS_with_non_exist_sequence(obj):
 
-#     # ValueError is expected to raise as the sequence doesn't exist in master_df
-#     with pytest.raises(ValueError):
-#         obj.modify_TIS("CCCTGTACGCT")
-#         obj.modify_TIS("CCCTTTAAACT")
-
+def test_modify_TIS_with_non_exist_sequence(obj):
+    assert obj.modify_TIS("ATGCATGTTA") == "ATGCATGTTA"  # No AUG in the sequence, so no modification expected
+    assert obj.modify_TIS("AUGCACTGCATG") == "AUGCACTGCATG"  # No AUG in the internal region, so no modification expected
+    
 
 
 
