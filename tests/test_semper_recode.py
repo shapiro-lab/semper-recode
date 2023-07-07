@@ -1,6 +1,5 @@
-# !/usr/bin/env python
-
 """Tests for `semper_recode` package."""
+
 from semper_recode.semper_recode import SemperRecode # Import SemperRecode class
 import pytest
 
@@ -25,11 +24,23 @@ def test_find_in_frame():
     obj3 = SemperRecode(sample3)
     assert obj3.find_in_frame(sample3) == [3]
 
+# ================== TEST FIND_OUT_OF_FRAME ==================
+
+def test_find_out_of_frame():
+    sample1 = "AUGCCCAAATGUCCCUUU"
+    obj1 = SemperRecode(sample1)
+    assert obj1.find_out_of_frame(sample1) == [8]
+
+    sample1 = "AUGAAATGATGUCCCNNN"
+    obj1 = SemperRecode(sample1)
+    assert obj1.find_out_of_frame(sample1) == [5,8]
+
+
 # ================== TEST CONSTRUCTOR ==================
 
 def test_constructor_with_default_values():
     obj = SemperRecode()
-    assert obj.start_codon == ['AUG', 'ATG', 'GUG', 'UUG']
+    assert obj.start_codon == ['AUG', 'ATG']
     assert obj.master_df is not None
     assert obj.seq == 'ATGCTGACGGTAUGGACTTACCTGTATGCGTGCTAAATGCTAAGGCTGGTGCCGACCGGACCGTTGGGAGCGCTGTTGACCGGATGCTAAAGGGCCCGAGTCTTGTAGTACCGGACTTAAATGCGTTGTTTGACACCTGTT'
 
@@ -73,20 +84,25 @@ def test_efficiency_level_with_non_exist_sequence(obj):
         obj.efficiency_level("CCCTGTACGCT")
         obj.efficiency_level("CCCTTTAAACT")
 
-# ============= TEST MODIFY_TIS =============
+# ============= TEST MODIFY_TIS_IN_FRAME =============
 
 def test_modify_TIS_with_exist_sequence(obj):
-    assert obj.modify_TIS("CACTGCATGTTA") == "CATTGTATGCTG"  # 34 -> 12
-    assert obj.modify_TIS("AUGCACTGCATGTTA") == "AUGCATTGTATGCTG"  # The first AUG is expected to remain the same 
-    assert obj.modify_TIS("CACTGCATGTTAATG") == "CATTGTATGCTGATG"  # The last AUG is expected to remain the same
-    assert obj.modify_TIS("AATGAAATGCTG") == "AATGAGATGCTG"  # 82 -> 80
+    assert obj.modify_TIS_in_frame("CACTGCATGTTA") == "CATTGTATGCTG"  # 34 -> 12
+    assert obj.modify_TIS_in_frame("AUGCACTGCATGTTA") == "AUGCATTGTATGCTG"  # The first AUG is expected to remain the same 
+    assert obj.modify_TIS_in_frame("CACTGCATGTTAATG") == "CATTGTATGCTGATG"  # The last AUG is expected to remain the same
+    assert obj.modify_TIS_in_frame("AATGAAATGCTG") == "AATGAGATGCTG"  # 82 -> 80
 
 
 def test_modify_TIS_with_non_exist_sequence(obj):
-    assert obj.modify_TIS("ATGCATGTTA") == "ATGCATGTTA"  # No AUG in the sequence, so no modification expected
-    assert obj.modify_TIS("AUGCACTGCATG") == "AUGCACTGCATG"  # No AUG in the internal region, so no modification expected
-    
+    assert obj.modify_TIS_in_frame("ATGCATGTTA") == "ATGCATGTTA"  # No AUG in the sequence, so no modification expected
+    assert obj.modify_TIS_in_frame("AUGCACTGCATG") == "AUGCACTGCATG"  # No AUG in the internal region, so no modification expected   
 
+# ============= TEST PROCESS_SEQUENCE =============
 
+def test_all():
+    # Use Ishaan's sequence (gmail)
+    # Create ground truth seq to compare with the result from package
+    my_obj = SemperRecode(input_file_path = "tests/sample_file/sample_file.fasta")
+    my_obj.process_sequence()
 
 

@@ -35,13 +35,16 @@ class SemperRecode:
             File path to user's input fasta file
 
         """
-        self.start_codon = ['AUG', 'ATG', 'GUG', 'UUG'] # Use in find_in_frame()
+        self.start_codon = ['AUG', 'ATG'] # Use in find_in_frame()
         self.four_letter_codes = [] # Use in filtered_sequence()
         self.master_df = None
         self.load_data(current_path)
-        self.input_file = input_file_path # Path to the input fasta file
+        self.input_file = input_file_path if input_file_path else None
         self.seq = Seq(user_seq) if user_seq is not None else 'ATGCTGACGGTAUGGACTTACCTGTATGCGTGCTAAATGCTAAGGCTGGTGCCGACCGGACCGTTGGGAGCGCTGTTGACCGGATGCTAAAGGGCCCGAGTCTTGTAGTACCGGACTTAAATGCGTTGTTTGACACCTGTT'
-    
+        self.codon_dict = []
+        self.codon_list = {}
+        self.seq_id = []
+
     def load_data(self, path):
         """
         Loads data required for the analysis. Reads various data files and initializes necessary attributes.
@@ -73,14 +76,25 @@ class SemperRecode:
         # Four letters codes
         self.four_letter_codes = list(self.master_df['4-letters'].unique())  # Get unique four-letter codes from master_df
 
-    def process_sequence(self, file_path):
+        # Load codon dictionary
+        codon_dict_path = os.path.join(path, 'codon_dict.pkl')
+
+        with open(codon_dict_path, 'rb') as file:
+            self.codon_dict = pickle.load(file)
+        
+        # Load codon list
+        codon_list_path = os.path.join(path, 'codon_list.pkl')
+
+        with open(codon_list_path, 'rb') as file:
+            self.codon_list = pickle.load(file)
+
+    def process_sequence(self):
         """
         Takes in a fasta file path and returns the modified sequence with lower efficiency (if possible).
 
         Parameters
         ----------
-        file_path : str
-            Path to the input fasta file.
+        None
 
         Returns
         -------
@@ -95,15 +109,17 @@ class SemperRecode:
         """
         modified_sequences = []
 
-        with open(file_path, 'r') as file:
+        with open(self.input_file, 'r') as file:
             for record in SeqIO.parse(file, 'fasta'): # Parsing line by line
+                self.seq_id.append(record.id)
                 sequence = str(record.seq)
-                replace_sequence = self.modify_TIS(sequence)
+                replace_sequence = self.modify_TIS_in_frame(sequence)
                 modified_sequences.append(replace_sequence)
-
+                
+        self.to_fasta(modified_sequences, "Modified_sequence")
         return modified_sequences
 
-    def modify_TIS(self, sequence):
+    def modify_TIS_in_frame(self, sequence):
         '''
         Takes in sequence (str or Seq object) and return modified sequence
         with lower TIS efficiency (str ot Seq object)
@@ -117,7 +133,7 @@ class SemperRecode:
             modified_sequence (str)
         '''
         new_seq = list(sequence)
-        index = self.find_in_frame(sequence) # Get the indices of AUG(s)
+        index = self.find_in_frame(sequence) # Get the indices of in-frame AUG(s)
         df = self.master_df
 
         '''
@@ -144,6 +160,8 @@ class SemperRecode:
                 '''
                 if(int(new_eff) < current_eff):
                     new_seq[pos-6:pos+6] = filtered["4-codons"].iloc[0]
+                else:
+                    print(f"No sequence with lower efficiency is found for {internal_TIS_seq}")
 
         return ''.join(new_seq)
 
@@ -177,6 +195,7 @@ class SemperRecode:
 
         return match['efficiency'].iloc[0]
 
+    
     def find_in_frame(self, sequence):
         """
         Takes in a sequence (str) and returns a list of indices where the AUG codon is found.
@@ -203,6 +222,37 @@ class SemperRecode:
 
         return pos
     
+    def find_out_of_frame(self, sequence):
+        """
+        Takes in a sequence (str) and returns a list of indices where the out-of-frame AUG codon is found.
+
+        Parameters
+        ----------
+        sequence : str
+            The input sequence to search for AUG codons.
+
+        Returns
+        -------
+        pos : list
+            A list of integers representing the indices of out-of-frame AUG codons in the sequence.
+
+        """
+        pos = []
+        index = -1
+
+        for codon in self.start_codon:
+            index = -1
+
+            while True:
+                index = sequence.find(codon, index + 1)
+                if index == -1:
+                    break
+
+                if index%3 != 0:
+                    pos.append(index)
+    
+        return pos
+    
     def to_fasta(self, sequence, output_file_name):
         '''
         Takes in a list of modified sequences and converts them back to FASTA format for exporting to users.
@@ -218,11 +268,19 @@ class SemperRecode:
         -------
         None
 
+        Raises
+        ------
+        ValueError
+            If the sequence is empty.
+
         '''
+        if not sequence:
+            raise ValueError("Sequence list is empty, unable to export")
+
         output = []
 
         for i, seq in enumerate(sequence):
-            temp = SeqRecord(Seq(seq), id=f'Seq{i+1}', description='')
+            temp = SeqRecord(Seq(seq), id=f"{self.seq_id[i]}_semper_recode", description='')
             output.append(temp)
         '''
         i = index as wel iterated through sequence 
@@ -231,11 +289,13 @@ class SemperRecode:
         is being created 
 
         Metadata:
-            id: index+1
+            id: The sequence original sequence name stored in self.seq_id
             description: None
 1
         '''
-        with open(output_file_name, 'w') as file:
+        output_file = output_file_name + ".fasta"
+
+        with open(output_file, 'w') as file:
             SeqIO.write(output, file, 'fasta')
         
         '''
@@ -318,5 +378,3 @@ class SemperRecode:
         """
 
         possible_seq_df = self.filtered_sequence(efficiency, self.master_df)
-
-
