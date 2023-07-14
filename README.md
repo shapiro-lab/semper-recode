@@ -26,3 +26,20 @@ git clone https://github.com/ishaanjdev/semper-recode.git
 cd SemperRecode
 pip install .
 ```
+
+## To get started
+How to parse .fasta file sequence by sequence
+
+```shell
+with open([input_file_path], 'r') as file:
+    for seq in SeqIO.parse(file, 'fasta'): # Parsing sequence line by line
+        # Proceed with calling desired functions
+```
+
+For example:
+```shell
+with open("tests/sample_file/sample_file_inputs.fasta", 'r') as file:
+    for seq in SeqIO.parse(file, 'fasta'):
+        obj = SemperRecode(seq)
+        modified_seq = obj.process_sequence()
+```
