@@ -68,7 +68,7 @@ with open("tests/sample_file/sample_file_inputs.fasta", 'r') as file:
 ```
 ****
 
-**Sample workflow**
+##Sample workflow
 
 Example 
 ```shell

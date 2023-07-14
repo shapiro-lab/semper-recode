@@ -10,6 +10,26 @@ from Bio import SeqIO
 def obj():
     return SemperRecode("ATGCTGATGCTAATGCGTACGTAGCTAA")
 
+# ================== TEST CONSTRUCTOR ==================
+
+def test_constructor_valid_sequence():
+        user_seq = "ATGCATGC"
+        recode = SemperRecode(user_seq)
+        assert isinstance(recode, SemperRecode)
+        assert recode.seq == user_seq
+
+def test_constructor_empty_sequence():
+    with pytest.raises(TypeError):
+        SemperRecode()
+
+def test_constructor_whitespace_sequence():
+    with pytest.raises(ValueError):
+        SemperRecode("    ")
+
+def test_constructor_blank_sequence():
+    with pytest.raises(ValueError):
+        SemperRecode("")
+
 # ================== TEST FIND_IN_FRAME ==================
 
 def test_find_in_frame():
@@ -32,29 +52,10 @@ def test_find_in_frame():
     obj3 = SemperRecode(sample3)
     assert obj3.find_in_frame(sample3) == [3]
 
-# ================== TEST CONSTRUCTOR ==================
-
-def test_constructor_valid_sequence():
-        user_seq = "ATGCATGC"
-        recode = SemperRecode(user_seq)
-        assert isinstance(recode, SemperRecode)
-        assert recode.seq == user_seq
-
-def test_constructor_empty_sequence():
-    with pytest.raises(ValueError):
-        SemperRecode("")
-
-def test_constructor_whitespace_sequence():
-    with pytest.raises(ValueError):
-        SemperRecode("    ")
-
-def test_constructor_blank_sequence():
-    with pytest.raises(ValueError):
-        SemperRecode("")
-
-def test_constructor_seq_id_initialization():
-    user_seq = "ATGCATGC"
-    recode = SemperRecode(user_seq)
+    sample4 = "ATGGTGATCAAGAACATCCAGGTGTTCTTTATGAAAACCATCAGCAACCGGTCCATCAGCCGGGCCAAGATCAGCACCATGCCCAGACCTATG"
+    print(len(sample4))
+    obj4 = SemperRecode(sample4)
+    assert obj4.find_in_frame(sample4) == [0, 30, 78, 90]
 
 # ============= TEST EFFICIENCY_LEVEL =============
 
@@ -100,8 +101,27 @@ def test_modify_TIS_with_non_exist_sequence(obj):
     Goal: Ensure that no modification is performed when a sequence doesn't contain any AUGs.
     """
 
+    # Tammy: Use this test cases when testing process_sequence() to see if both modify_TIS_in_frame and modify_TIS_out_of_frame works
+
     assert obj.modify_TIS_in_frame("ATGCATGTTA") == "ATGCATGTTA"  # No AUG in the sequence, so no modification expected
     assert obj.modify_TIS_in_frame("ATGCACTGCATG") == "ATGCACTGCATG"  # No AUG in the internal region, so no modification expected   
+
+def test_modify_TIS_with_more_than_one_AUG(obj):
+    """
+    Purpose: Test the `modify_TIS_in_frame` method in the SemperRecode class with sequences that has more than 1 TIS sequences.
+    Goal: Ensure that the modification is performed correctly even when there's 2 or more AUG being present in the same TIS sequence
+    """
+
+    assert obj.modify_TIS_in_frame("ATGCATGTTATGCATATGCAC") == "ATGCATGTTATGCATATGCAT" # There's 2 AUG in the second TIS sequence
+    '''
+    ATG | CAT | GTT | ATG | CAT | ATG | CAC
+    TIS sequences:
+        1. CATGTTATGCAT -> CATGTTATGCAC
+        --> seq = "ATGCATGTTATGCACATGCAC"
+        2. ATGCATATGCAC -> ATGCACATGCAC -> ATGCATATGCAT
+        --> seq = ATGCATGTTATGCATATGCAT
+    '''
+
 
 # ============= TEST GET_AA_ALTERNATIVE =============
 
