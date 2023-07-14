@@ -33,6 +33,22 @@ pip install .
 
 ****
 
+### Prerequisites
+
+Before using this package, make sure you have the following dependencies installed:
+
+- [pandas](https://pandas.pydata.org/): A powerful data manipulation library.
+- [numpy](https://numpy.org/): A fundamental package for scientific computing with Python.
+- [Biopython](https://biopython.org/): A set of freely available tools for biological computation.
+
+You can install these dependencies using pip:
+
+```shell
+pip install pandas numpy biopython
+```
+
+***
+
 ## To get started
 **To parse .fasta file sequence by sequence**
 
