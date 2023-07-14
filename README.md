@@ -38,7 +38,6 @@ pip install .
 Before using this package, make sure you have the following dependencies installed:
 
 - [pandas](https://pandas.pydata.org/): A powerful data manipulation library.
-- [numpy](https://numpy.org/): A fundamental package for scientific computing with Python.
 - [Biopython](https://biopython.org/): A set of freely available tools for biological computation.
 - [pytest](https://docs.pytest.org/): A Python testing framework
 
@@ -47,6 +46,17 @@ You can install these dependencies using pip:
 ```shell
 pip install pandas numpy biopython pytest
 ```
+
+After installing the package and its dependencies, you can import the required modules in your Python script as follows:
+
+```python
+import os
+import pickle
+import warnings
+import pandas as pd
+from Bio import SeqIO
+from Bio.Seq import Seq
+from Bio.SeqRecord import SeqRecord
 
 ***
 

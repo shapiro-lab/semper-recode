@@ -1,14 +1,10 @@
-import pandas as pd
-import numpy as np
-import re
-from collections import Counter
+import os
 import pickle
-from itertools import product
+import warnings
+import pandas as pd
+from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
-from Bio import SeqIO
-import os
-import warnings
 
 '''
 Global variables declaration
