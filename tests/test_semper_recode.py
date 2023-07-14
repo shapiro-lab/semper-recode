@@ -177,7 +177,7 @@ def test_fasta_file():
             modified_seq = SeqRecord(Seq(new_seq), id=f"{line.id}_semper_recode", description='')
             output.append(modified_seq)
 
-    output_file = "tests/sample_file/test_fasta_file.fasta"
+    output_file = "tests/sample_file/3_sample_inputs_outputs.fasta"
 
     with open(output_file, 'w') as file:
         SeqIO.write(output, file, 'fasta')
