@@ -1,10 +1,3 @@
-'''Install biopython and pytest using pip if not already installed
-
-  1. pip install biopython
-  2. pip install pytest
-
-'''
-
 import pandas as pd
 import numpy as np
 import re
@@ -16,13 +9,9 @@ from Bio.SeqRecord import SeqRecord
 from Bio import SeqIO
 import os
 
-# import ishaan_utils
-
 '''
 Global variables declaration
-'''
 
-"""
 Loads data required for the analysis. Reads various data files and initializes necessary attributes.
 
 Raises
@@ -30,14 +19,17 @@ Raises
 FileNotFoundError
     If any of the required data files are not found.
 
-"""
+'''
 start_codon = ['ATG']
 path = "data/" 
+
+# Master dataframe
 master_df_path = os.path.join(path, 'master_df_os_2023.csv')
 if not os.path.exists(master_df_path):
     raise FileNotFoundError(f"Master dataframe file not found: {master_df_path}")
         
 master_df = pd.read_csv(path + 'master_df_os_2023.csv')
+
 # Load codon list
 codon_list_path = os.path.join(path, 'codon_list.pkl')
 if not os.path.exists(codon_list_path):
@@ -61,17 +53,17 @@ four_letter_codes = list(master_df['4-letters'].unique())  # Get unique four-let
 
 '''
 Functions:
-    data_prep(self, path)
-    process_sequence(self)
-        modify_TIS_in_frame(self, sequence)
+    > data_prep(self, path)
+    > process_sequence(self)
+        > modify_TIS_in_frame(self, sequence)
             > find_in_frame(self, sequence)
             > efficiency_level(self, sequence)
-        modify_TIS_out_of_frame(self, sequence)
+        > modify_TIS_out_of_frame(self, sequence)
             > find_out_of_frame(self, sequence)
             > get_aa_key(self, sequence)
-    to_fasta(self, sequence, output_file_name)
-    filtered_sequence_eff(self, efficiency)
-    find_lower_eff_sequence(self, efficiency, seq)
+    > to_fasta(self, sequence, output_file_name)
+    > filtered_sequence_eff(self, efficiency)
+    > find_lower_eff_sequence(self, efficiency, seq)
 '''
 
 class SemperRecode:
@@ -87,8 +79,8 @@ class SemperRecode:
         Raises
         ------
         ValueError
-            If input sequence is blank.
-            If input sequence contains "u" or "U"
+            1. If input sequence is blank.
+            2. If input sequence contains "u" or "U"
 
         """
         global master_df
@@ -97,6 +89,7 @@ class SemperRecode:
         global start_codon
         self.start_codon = start_codon
 
+        # Convert user input sequence into str (string)
         self.seq = str(user_seq)
 
         # Check if user input sequence is empty
@@ -107,10 +100,11 @@ class SemperRecode:
         if "U" in self.seq or "u" in self.seq:
             raise ValueError(f"U or u found in the input sequence {self.seq}")
     
-
     def process_sequence(self):
         """
-        Takes in a fasta file path and returns the modified sequence with lower efficiency (if possible).
+        Uses the nucleotide sequence input through the constructor and returns the modified sequence with lower efficiency (if any).
+        Loop through modify_TIS_in_frame() and modify_TIS_out_of_frame() to ensure there's no out-of-frame internal AUG and that the
+        expressional level is the lowest it could possibly be
 
         Parameters
         ----------
@@ -118,30 +112,28 @@ class SemperRecode:
 
         Returns
         -------
-        list
-            List of modified sequences of the input file.
+        replace_sequence : str
+            String of modified sequences of the input sequence.
 
         Raises
         ------
-        FileNotFoundError
-            If the file_path does not exist.
+        None
 
         """
 
         # Find modified sequence which is returned by modify_TIS_in_frame()
         replace_sequence = self.modify_TIS_in_frame(self.seq)
 
-       
         return replace_sequence
 
     def modify_TIS_in_frame(self, sequence):
         '''
-        Takes in sequence (str or Seq object) and return modified sequence
-        with lower TIS efficiency (str ot Seq object)
+        Takes in sequence (str) and return modified sequence with lower TIS efficiency (str)
+        by getting all the index location of internal AUG from find_in_frame() and modify the sequence accordingly
 
         Parameters
         ----------
-            sequence : str or Seq object
+            sequence : str
 
         Returns
         -------
@@ -176,7 +168,7 @@ class SemperRecode:
                 if(int(new_eff) < current_eff):
                     new_seq[pos-6:pos+6] = filtered["4-codons"].iloc[0]
                 else:
-                    print(f"No sequence with lower efficiency is found for {internal_TIS_seq}")
+                    print(f"No sequence with lower efficiency is found for {internal_TIS_seq}\nConsider mutate/remove the sequence")
 
         return ''.join(new_seq)
 
