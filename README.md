@@ -33,18 +33,19 @@ pip install .
 
 ****
 
-### Prerequisites
+## Prerequisites
 
 Before using this package, make sure you have the following dependencies installed:
 
 - [pandas](https://pandas.pydata.org/): A powerful data manipulation library.
 - [numpy](https://numpy.org/): A fundamental package for scientific computing with Python.
 - [Biopython](https://biopython.org/): A set of freely available tools for biological computation.
+- [pytest](https://docs.pytest.org/): A Python testing framework
 
 You can install these dependencies using pip:
 
 ```shell
-pip install pandas numpy biopython
+pip install pandas numpy biopython pytest
 ```
 
 ***
@@ -71,26 +72,26 @@ with open("tests/sample_file/sample_file_inputs.fasta", 'r') as file:
 
 Example 
 ```shell
-        output = []
+    output = []
 
-        for i, seq in enumerate(sequence):
-            temp = SeqRecord(Seq(seq), id=f"{self.seq_id[i]}_semper_recode", description='')
-            output.append(temp)
-        '''
-        i = index as wel iterated through sequence 
+    for i, seq in enumerate(sequence):
+        temp = SeqRecord(Seq(seq), id=f"{self.seq_id[i]}_semper_recode", description='')
+        output.append(temp)
+    '''
+    i = index as wel iterated through sequence 
 
-        In each iteration, a new SeqRecord object (Seq object but with additional metadata)
-        is being created 
+    In each iteration, a new SeqRecord object (Seq object but with additional metadata)
+    is being created 
 
-        Metadata:
-            id: The sequence original sequence name stored in self.seq_id
-            description: None
-1
-        '''
-        output_file = "tests/sample_file/" + output_file_name + ".fasta"
+    Metadata:
+        id: The sequence original sequence name stored in self.seq_id
+        description: None
 
-        with open(output_file, 'w') as file:
-            SeqIO.write(output, file, 'fasta')
-        
-        '''
+    '''
+    output_file = "tests/sample_file/" + output_file_name + ".fasta"
+
+    with open(output_file, 'w') as file:
+        SeqIO.write(output, file, 'fasta')
+    
+    '''
 ```

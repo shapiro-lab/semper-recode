@@ -101,7 +101,7 @@ class SemperRecode:
         if len(user_seq) == 0 or user_seq.isspace():
             raise ValueError("No sequence input")
         
-        # Check if the user input sequence contains "u" or "U". If yes, raise ValueError
+        # Raise ValueError if user input sequence contains "u" or "U"
         if "U" in user_seq or "u" in user_seq:
             raise ValueError("U or u found in the input sequence")
         
