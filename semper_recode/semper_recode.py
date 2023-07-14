@@ -10,7 +10,6 @@ import numpy as np
 import re
 from collections import Counter
 import pickle
-import itertools
 from itertools import product
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
@@ -19,74 +18,95 @@ import os
 
 # import ishaan_utils
 
+'''
+Global variables declaration
+'''
+
+"""
+Loads data required for the analysis. Reads various data files and initializes necessary attributes.
+
+Raises
+------
+FileNotFoundError
+    If any of the required data files are not found.
+
+"""
+start_codon = ['ATG']
+path = "data/" 
+master_df_path = os.path.join(path, 'master_df_os_2023.csv')
+if not os.path.exists(master_df_path):
+    raise FileNotFoundError(f"Master dataframe file not found: {master_df_path}")
+        
+master_df = pd.read_csv(path + 'master_df_os_2023.csv')
+# Load codon list
+codon_list_path = os.path.join(path, 'codon_list.pkl')
+if not os.path.exists(codon_list_path):
+    raise FileNotFoundError(f"Codon list (.pkl) file not found: {codon_list_path}")
+
+with open(codon_list_path, 'rb') as file:
+    codon_list = pickle.load(file)
+
+if codon_list == {}:
+    raise ValueError("codon_list is empty")
+
+# Load codon dictionary
+codon_dict_path = os.path.join(path, 'codon_dict.pkl')
+
+with open(codon_dict_path, 'rb') as file:
+    codon_dict = pickle.load(file)
+        
+# Four letters codes
+four_letter_codes = list(master_df['4-letters'].unique())  # Get unique four-letter codes from master_df
+
+
+'''
+Functions:
+    data_prep(self, path)
+    process_sequence(self)
+        modify_TIS_in_frame(self, sequence)
+            > find_in_frame(self, sequence)
+            > efficiency_level(self, sequence)
+        modify_TIS_out_of_frame(self, sequence)
+            > find_out_of_frame(self, sequence)
+            > get_aa_key(self, sequence)
+    to_fasta(self, sequence, output_file_name)
+    filtered_sequence_eff(self, efficiency)
+    find_lower_eff_sequence(self, efficiency, seq)
+'''
+
 class SemperRecode:
-    def __init__(self, user_seq = None, current_path = "data/", input_file_path = None):
+    def __init__(self, user_seq):
         """
         Initializes the SemperRecode object.
 
         Parameters
         ----------
-        user_seq : str or Seq object, optional
-            User-defined sequence, by default None. In case user want to tune single 
-            sequence instead of importing a whole FASTA file
-        current_path : str
-            File path to user's data which will be use to append to file names when file path is required
-        input_file_path : str
-            File path to user's input fasta file
-
-        """
-        self.start_codon = ['AUG', 'ATG'] # Use in find_in_frame()
-        self.four_letter_codes = [] # Use in filtered_sequence()
-        self.master_df = None
-        self.load_data(current_path)
-        self.input_file = input_file_path if input_file_path else None
-        self.seq = Seq(user_seq) if user_seq is not None else 'ATGCTGACGGTAUGGACTTACCTGTATGCGTGCTAAATGCTAAGGCTGGTGCCGACCGGACCGTTGGGAGCGCTGTTGACCGGATGCTAAAGGGCCCGAGTCTTGTAGTACCGGACTTAAATGCGTTGTTTGACACCTGTT'
-        self.codon_dict = []
-        self.codon_list = {}
-        self.seq_id = []
-
-    def load_data(self, path):
-        """
-        Loads data required for the analysis. Reads various data files and initializes necessary attributes.
-        
-        Parameters
-        ----------
-        path : str
-            User-defined sequence, by default None. In case user want to tune single sequence 
-            instead of importing a whole FASTA file
-
-        Returns
-        -------
-        None
+        user_seq : str or Seq object
+            User-defined sequence as the result of .fasta file being parsed by users
 
         Raises
         ------
-        FileNotFoundError
-            If any of the required data files are not found.
+        ValueError
+            If input sequence is blank.
+            If input sequence contains "u" or "U"
 
         """
-        # Master dataframe
-        master_df_path = os.path.join(path, 'master_df_os_2023.csv')
-        if not os.path.exists(master_df_path):
-            raise FileNotFoundError(f"Master dataframe file not found: {master_df_path}")
+        global master_df
+        self.master_df = master_df
+
+        global start_codon
+        self.start_codon = start_codon
+
+        # Check if user input sequence is empty
+        if len(user_seq) == 0 or user_seq.isspace():
+            raise ValueError("No sequence input")
         
-        self.master_df = pd.read_csv(path + 'master_df_os_2023.csv')
-        self.master_df = self.master_df.drop(columns="sequence") 
-
-        # Four letters codes
-        self.four_letter_codes = list(self.master_df['4-letters'].unique())  # Get unique four-letter codes from master_df
-
-        # Load codon dictionary
-        codon_dict_path = os.path.join(path, 'codon_dict.pkl')
-
-        with open(codon_dict_path, 'rb') as file:
-            self.codon_dict = pickle.load(file)
+        # Check if the user input sequence contains "u" or "U". If yes, raise ValueError
+        if "U" in user_seq or "u" in user_seq:
+            raise ValueError("U or u found in the input sequence")
         
-        # Load codon list
-        codon_list_path = os.path.join(path, 'codon_list.pkl')
-
-        with open(codon_list_path, 'rb') as file:
-            self.codon_list = pickle.load(file)
+        self.seq = Seq(user_seq) 
+        self.seq_id = []
 
     def process_sequence(self):
         """
@@ -116,7 +136,7 @@ class SemperRecode:
                 replace_sequence = self.modify_TIS_in_frame(sequence)
                 modified_sequences.append(replace_sequence)
                 
-        self.to_fasta(modified_sequences, "Modified_sequence")
+        self.to_fasta(modified_sequences, "sample_file_outputs")
         return modified_sequences
 
     def modify_TIS_in_frame(self, sequence):
@@ -165,6 +185,32 @@ class SemperRecode:
 
         return ''.join(new_seq)
 
+    def find_in_frame(self, sequence):
+        """
+        Takes in a sequence (str) and returns a list of indices where the AUG codon is found.
+
+        Parameters
+        ----------
+        sequence : str
+            The input sequence to search for AUG codons.
+
+        Returns
+        -------
+        pos : list
+            A list of integers representing the indices of in-frame AUG codons in the sequence.
+
+        """
+        pos = []  # position(s) of in-frame AUG in the string (sequence)
+
+        # Loop through codon by codon (start from 0, end at last codon, increase by 3)
+        for i in range(0, len(sequence)-2, 3):
+            codon = sequence[i:i+3]
+
+            if codon in self.start_codon:
+                pos.append(i)
+
+        return pos
+    
     def efficiency_level(self, sequence):
         '''
         Takes in sequence and return efficiency level
@@ -196,31 +242,58 @@ class SemperRecode:
         return match['efficiency'].iloc[0]
 
     
-    def find_in_frame(self, sequence):
-        """
-        Takes in a sequence (str) and returns a list of indices where the AUG codon is found.
+    def modify_TIS_out_of_frame(self, sequence):
+        '''
+        Takes in sequence (str or Seq object) and return modified sequence
+        with lower TIS efficiency (str ot Seq object)
 
         Parameters
         ----------
-        sequence : str
-            The input sequence to search for AUG codons.
+            sequence : str or Seq object
 
         Returns
         -------
-        pos : list
-            A list of integers representing the indices of in-frame AUG codons in the sequence.
+            modified_sequence (str)
+        '''
+        new_seq = list(sequence)
+        index = self.find_out_of_frame(sequence) # Get the indices fo out-of-frame AUG(s)
+        df = self.master_df
 
-        """
-        pos = []  # position(s) of in-frame AUG in the string (sequence)
+        '''
+        Iterate through sequene and modify sequence to get rid of any out-of-frame AUG(s)
+        using the index from find_out_of_frame()
+        '''
 
-        # Loop through codon by codon (start from 0, end at last codon, increase by 3)
-        for i in range(0, len(sequence), 3):
-            codon = sequence[i:i+3]
+        for pos in index:
+            # Break the it down into 2 codons according to its proper codon frame
+            first_aa = sequence[pos%3: pos%3 + 2]
+            second_aa = sequence[pos%3 + 2 : pos%3 + 4]
 
-            if codon in self.start_codon:
-                pos.append(i)
 
-        return pos
+            '''
+            Find the other codon sequence (if any) which produce the same 
+            amino acid as the key using the self.codon_dict which contains
+            amino acid's name, all possible codon sequence, and its fraction
+
+            {'A': {'GCC': 0.3975938884126084, 'GCT': 0.2626759965707805,
+            'GCA': 0.2301414614526459, 'GCG': 0.1095886535639651}, .......
+
+            Ex: 
+                Given: 'N': {'AAC': 0.5184461245612413, 'AAT': 0.4815538754387587},
+                Say our first_aa is 'AAC', then we get 'AAT'
+            '''
+            # first_aa_new_codon, first_aa_new_codon_value = self.get_aa_alternative(first_aa)
+            # second_aa_new_codon, second_aa_new_codon_value = self.get_aa_alternative(second_aa)
+            
+            '''
+            Compare which pair of codon (the old and the new one) has the least difference in fraction value
+            When the pair is found, replace the old codon with the new codon
+            '''
+
+            
+            
+
+        return ''.join(new_seq)
     
     def find_out_of_frame(self, sequence):
         """
@@ -252,7 +325,45 @@ class SemperRecode:
                     pos.append(index)
     
         return pos
-    
+
+    def get_aa_alternative(self, original_codon):
+        '''
+        Takes in original_codon (ex: 'GCC', 'GAG', 'TCA') then return 1. the codon which produce the key amino acid 
+        with highest fraction (other than the original codon itself) and 2. The fraction of that codon
+
+        Sample outout
+        Input: get_aa_key('GCC')
+        Output: 'GCT', 0.2301414614526459
+
+        Parameters
+        ----------
+            original_codon : str
+
+        Returns
+        -------
+            codon (str)
+            value (int)
+
+        '''
+        # Find the corresponding amino acid (ex: 'A', 'R', 'N')
+        aa = ""
+
+        for key, value in codon_list.items():
+            if original_codon in value:
+                aa = key
+                break
+
+        # codon = list(codon_dict[aa].keys())
+        # index = 0
+
+        # # If the codon is the same as the original one, get to the next one
+        # index += 1 if codon == original_codon else 0
+
+        # value = codon_dict[aa][codon[index]]
+
+        # return codon, int(value)
+
+        return aa
     def to_fasta(self, sequence, output_file_name):
         '''
         Takes in a list of modified sequences and converts them back to FASTA format for exporting to users.
@@ -293,7 +404,7 @@ class SemperRecode:
             description: None
 1
         '''
-        output_file = output_file_name + ".fasta"
+        output_file = "tests/sample_file/" + output_file_name + ".fasta"
 
         with open(output_file, 'w') as file:
             SeqIO.write(output, file, 'fasta')
@@ -310,7 +421,13 @@ class SemperRecode:
         TGCAATGCAATG
         '''
         
+    ''' 
+    =======================================================================================
+                                        
+                                        Exploratory analysis
 
+    =======================================================================================
+    '''
     def filtered_sequence_eff(self, efficiency):
         """
         Takes in efficiency level input and finds the sequences in the dataframe by filtering,
@@ -378,3 +495,11 @@ class SemperRecode:
         """
 
         possible_seq_df = self.filtered_sequence(efficiency, self.master_df)
+
+    ''' 
+    =======================================================================================
+                                        
+                                        Exploratory analysis
+                                        
+    =======================================================================================
+    '''

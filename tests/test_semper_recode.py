@@ -5,7 +5,7 @@ import pytest
 
 @pytest.fixture
 def obj():
-    return SemperRecode()
+    return SemperRecode("ATGCTGATGCTAATGCGTACGTAGCTAA")
 
 # ================== TEST FIND_IN_FRAME ==================
 
@@ -16,12 +16,12 @@ def test_find_in_frame():
     """
 
     # In-frame AUGs
-    sample1 = "ATGCTGATGCTAATGCGTACGTAGCTAA"
+    sample1 = "ATGCTGATGCTAATGCGTACGTAGCTAA" # Have one extra nucleotide
     obj1 = SemperRecode(sample1)
     assert obj1.find_in_frame(sample1) == [0,6,12] 
     
     # Out-of-frame AUGs
-    sample2 = "AUTGTTTAUGGCCATTUGSAUG"
+    sample2 = "ATTGTTTATGGCCATTTGSATG"
     obj2 = SemperRecode(sample2)
     assert obj2.find_in_frame(sample2) == []
 
@@ -31,60 +31,29 @@ def test_find_in_frame():
 
 # ================== TEST CONSTRUCTOR ==================
 
-def test_constructor_with_default_values():
-    """
-    Purpose: Test the constructor of the SemperRecode class with default values.
-    Goal: Verify that the object is properly initialized with default values, and the sequence matches the expected value.
-    """
+def test_constructor_valid_sequence():
+        user_seq = "ATGCATGC"
+        recode = SemperRecode(user_seq)
+        assert isinstance(recode, SemperRecode)
+        assert recode.seq == user_seq
 
-    obj = SemperRecode()
-    assert obj.start_codon == ['AUG', 'ATG']
-    assert obj.master_df is not None
-    assert obj.seq == 'ATGCTGACGGTAUGGACTTACCTGTATGCGTGCTAAATGCTAAGGCTGGTGCCGACCGGACCGTTGGGAGCGCTGTTGACCGGATGCTAAAGGGCCCGAGTCTTGTAGTACCGGACTTAAATGCGTTGTTTGACACCTGTT'
+def test_constructor_empty_sequence():
+    with pytest.raises(ValueError):
+        SemperRecode("")
 
-def test_constructor_with_user_seq():
-    """
-    Purpose: Test the constructor of the SemperRecode class with a user-provided sequence.
-    Goal: Ensure that the object is properly initialized with the user-provided sequence and a non-empty master_df.
-    """
+def test_constructor_whitespace_sequence():
+    with pytest.raises(ValueError):
+        SemperRecode("    ")
 
-    user_seq = 'ATCGTA'
-    obj = SemperRecode(user_seq=user_seq)
-    assert obj.master_df is not None
-    assert obj.seq == user_seq
+def test_constructor_blank_sequence():
+    with pytest.raises(ValueError):
+        SemperRecode("")
 
-def test_constructor_with_input_file_path():
-    """
-    Purpose: Test the constructor of the SemperRecode class with an input file path.
-    Goal: Verify that the object is properly initialized with the provided input file path and a non-empty master_df.
-    """
-
-    input_file_path = 'path/to/input.fasta'
-    obj = SemperRecode(input_file_path=input_file_path)
-    assert obj.input_file == input_file_path
-
-def test_constructor_with_all_arguments():
-    """
-    Purpose: Test the constructor of the SemperRecode class with all possible arguments.
-    Goal: Verify that the object is properly initialized with the provided arguments and the sequence matches the user-provided sequence.
-    """
-
-    user_seq = 'ATCGTA'
-    current_path = 'data/'
-    input_file_path = 'path/to/input.fasta'
-    obj = SemperRecode(user_seq=user_seq, current_path=current_path, input_file_path=input_file_path)
-    assert obj.seq == user_seq
-    assert obj.input_file == input_file_path
-
-def test_load_data_with_existing_files():
-    """
-    Purpose: Test the `load_data` method in the SemperRecode class with existing files.
-    Goal: Ensure that the master_df is loaded successfully when given a valid current path.
-    """
-
-    current_path = 'data/'
-    obj = SemperRecode(current_path=current_path)
-    assert obj.master_df is not None
+def test_constructor_seq_id_initialization():
+    user_seq = "ATGCATGC"
+    recode = SemperRecode(user_seq)
+    assert isinstance(recode.seq_id, list)
+    assert recode.seq_id == []
 
 # ============= TEST EFFICIENCY_LEVEL =============
 
@@ -120,7 +89,7 @@ def test_modify_TIS_with_exist_sequence(obj):
     """
 
     assert obj.modify_TIS_in_frame("CACTGCATGTTA") == "CATTGTATGCTG"  # 34 -> 12
-    assert obj.modify_TIS_in_frame("AUGCACTGCATGTTA") == "AUGCATTGTATGCTG"  # The first AUG is expected to remain the same 
+    assert obj.modify_TIS_in_frame("ATGCACTGCATGTTA") == "ATGCATTGTATGCTG"  # The first AUG is expected to remain the same 
     assert obj.modify_TIS_in_frame("CACTGCATGTTAATG") == "CATTGTATGCTGATG"  # The last AUG is expected to remain the same
     assert obj.modify_TIS_in_frame("AATGAAATGCTG") == "AATGAGATGCTG"  # 82 -> 80
 
@@ -131,7 +100,17 @@ def test_modify_TIS_with_non_exist_sequence(obj):
     """
 
     assert obj.modify_TIS_in_frame("ATGCATGTTA") == "ATGCATGTTA"  # No AUG in the sequence, so no modification expected
-    assert obj.modify_TIS_in_frame("AUGCACTGCATG") == "AUGCACTGCATG"  # No AUG in the internal region, so no modification expected   
+    assert obj.modify_TIS_in_frame("ATGCACTGCATG") == "ATGCACTGCATG"  # No AUG in the internal region, so no modification expected   
+
+# ============= TEST GET_AA_ALTERNATIVE =============
+
+def test_get_aa_alternative(obj):
+    """
+    Purpose: Test the `get_aa_alternative` method in the SemperRecode class.
+    Goal: Ensure that the alternative codon and its fraction are returned correctly when given the old codon and .
+    """
+
+    assert obj.get_aa_alternative("GCC") == "A"
 
 # ============= TEST PROCESS_SEQUENCE =============
 
@@ -143,8 +122,12 @@ def test_all():
 
     # Use Ishaan's sequence (gmail)
     # Create ground truth seq to compare with the result from package
-    my_obj = SemperRecode(input_file_path = "tests/sample_file/sample_file.fasta")
-    my_obj.process_sequence()   
+    seq = "ATGGTGTCCAAGGGCGAGGAACTGTTCACCGGCGTGGTGCCCATCCTGGTGGAACTGGATGGCGACGTGAACGGCCACAAGTTCAGCGTGTCCGGCGAGGGCGAAGGCGACGCCACATACGGAAAGCTGACCCTGAAGTTCATCTGCACCACCGGCAAGCTGCCCGTGCCTTGGCCTACCCTCGTGACCACACTGACCTACGGCGTGCAGTGCTTCGCCAGATACCCCGACCACATGAAGCAGCACGATTTCTTCAAGAGCGCCATGCCCGAGGGCTACGTGCAGGAACGGACCATCTTCTTCAAGGACGACGGCAACTACAAGACAAGAGCCGAAGTGAAGTTCGAGGGCGACACCCTCGTGAACCGGATCGAGCTGAAGGGCATCGACTTCAAAGAGGATGGCAACATCCTGGGCCACAAGCTGGAGTACAACTACAACAGCCACAAGGTGTACATCACCGCCGACAAGCAGAAAAACGGCATCAAAGTGAACTTCAAGACCCGGCACAACATCGAGGACGGCAGCGTGCAGCTGGCCGACCACTACCAGCAGAACACCCCCATCGGAGATGGCCCCGTGCTGCTGCCCGACAACCACTACCTGAGCACACAAAGCGCCCTGAGCAAGGACCCCAACGAGAAGCGGGACCACATGGTGCTGCTGGAATTTGTGACCGCCGCTGGCATCACCCTGGGCATGGACGAGCTGTACAAGTGA"
+    my_obj = SemperRecode(seq)
+    expected_output = "ATGGTGTCCAAGGGCGAGGAACTGTTCACCGGCGTGGTGCCCATCCTGGTGGAACTGGATGGCGACGTGAACGGCCACAAGTTCAGCGTGTCCGGCGAGGGCGAAGGCGACGCCACATACGGAAAGCTGACCCTGAAGTTCATCTGCACCACCGGCAAGCTGCCCGTGCCTTGGCCTACCCTCGTGACCACACTGACCTACGGCGTGCAGTGCTTCGCCAGATACCCCGATCATATGAAACAGCACGATTTCTTCAAGAGTGCTATGCCTGAGGGCTACGTGCAGGAACGGACCATCTTCTTCAAGGACGACGGCAACTACAAGACAAGAGCCGAAGTGAAGTTCGAGGGCGACACCCTCGTGAACCGGATCGAGCTGAAGGGCATCGACTTCAAAGAGGATGGCAACATCCTGGGCCACAAGCTGGAGTACAACTACAACAGCCACAAGGTGTACATCACCGCCGACAAGCAGAAAAACGGCATCAAAGTGAACTTCAAGACCCGGCACAACATCGAGGACGGCAGCGTGCAGCTGGCCGACCACTACCAGCAGAACACCCCCATCGGAGATGGCCCCGTGCTGCTGCCCGACAACCACTACCTGAGCACACAAAGCGCCCTGAGCAAGGACCCCAACGAGAAGCGGGATCATATGGTTCTGCTGGAATTTGTGACCGCCGCTGGCATCACCCTTGGTATGGATGAGCTGTACAAGTGA"
+    my_obj.process_sequence() 
+
+      
 
 
 
