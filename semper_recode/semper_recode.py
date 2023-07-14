@@ -357,8 +357,8 @@ class SemperRecode:
         # return codon, int(value)
 
         return aa
+    
     def to_fasta(self, sequence, output_file_name):
-        # self.to_fasta(modified_sequences, "sample_file_outputs")
         '''
         Takes in a list of modified sequences and converts them back to FASTA format for exporting to users.
 
@@ -384,9 +384,9 @@ class SemperRecode:
 
         output = []
 
-        # for seq in enumerate(sequence):
-        #     temp = SeqRecord(Seq(seq), id=f"{seq.id}_semper_recode", description='')
-        #     output.append(temp)
+        for i, seq in enumerate(sequence):
+            temp = SeqRecord(Seq(seq), id=f'Seq{i+1}', description='')
+            output.append(temp)
         '''
         i = index as wel iterated through sequence 
 
