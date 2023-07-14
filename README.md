@@ -68,30 +68,24 @@ with open("tests/sample_file/sample_file_inputs.fasta", 'r') as file:
 ```
 ****
 
-**To merge and export all the sequence as a single fasta file**
+**Sample workflow**
 
 Example 
 ```shell
-    output = []
+with open("tests/sample_file/sample_inputs.fasta", 'r') as file:
+    for line in SeqIO.parse(file, 'fasta'):
+        input = str(line.seq)
+        obj = SemperRecode(input)
+        new_seq = obj.process_sequence()
 
-    for i, seq in enumerate(sequence):
-        temp = SeqRecord(Seq(seq), id=f"{self.seq_id[i]}_semper_recode", description='')
-        output.append(temp)
-    '''
-    i = index as wel iterated through sequence 
+        # Assert the generated sequence match the correctly modified sequence
+        assert new_seq in groud_truth 
 
-    In each iteration, a new SeqRecord object (Seq object but with additional metadata)
-    is being created 
+        modified_seq = SeqRecord(Seq(new_seq), id=f"{line.id}_semper_recode", description='')
+        output.append(modified_seq)
 
-    Metadata:
-        id: The sequence original sequence name stored in self.seq_id
-        description: None
+output_file = "tests/sample_file/sample_outputs.fasta"
 
-    '''
-    output_file = "tests/sample_file/" + output_file_name + ".fasta"
-
-    with open(output_file, 'w') as file:
-        SeqIO.write(output, file, 'fasta')
-    
-    '''
+with open(output_file, 'w') as file:
+    SeqIO.write(output, file, 'fasta')
 ```

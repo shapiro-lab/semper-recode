@@ -172,7 +172,8 @@ def test_fasta_file():
             obj = SemperRecode(input)
             new_seq = obj.process_sequence()
 
-            assert new_seq in groud_truth # Assert the generated sequence match the correctly modified sequence
+            # Assert the generated sequence match the correctly modified sequence
+            assert new_seq in groud_truth 
 
             modified_seq = SeqRecord(Seq(new_seq), id=f"{line.id}_semper_recode", description='')
             output.append(modified_seq)
