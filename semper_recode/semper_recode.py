@@ -81,8 +81,8 @@ class SemperRecode:
 
         Parameters
         ----------
-        user_seq : str or Seq object
-            User-defined sequence as the result of .fasta file being parsed by users
+        user_seq : str
+            User-input sequence as the result of .fasta file being parsed by users
 
         Raises
         ------
@@ -97,16 +97,16 @@ class SemperRecode:
         global start_codon
         self.start_codon = start_codon
 
+        self.seq = str(user_seq)
+
         # Check if user input sequence is empty
-        if len(user_seq) == 0 or user_seq.isspace():
+        if len(self.seq) == 0 or self.seq.isspace():
             raise ValueError("No sequence input")
         
         # Raise ValueError if user input sequence contains "u" or "U"
-        if "U" in user_seq or "u" in user_seq:
-            raise ValueError("U or u found in the input sequence")
-        
-        self.seq = Seq(user_seq) 
-        self.seq_id = []
+        if "U" in self.seq or "u" in self.seq:
+            raise ValueError(f"U or u found in the input sequence {self.seq}")
+    
 
     def process_sequence(self):
         """
@@ -127,17 +127,12 @@ class SemperRecode:
             If the file_path does not exist.
 
         """
-        modified_sequences = []
 
-        with open(self.input_file, 'r') as file:
-            for record in SeqIO.parse(file, 'fasta'): # Parsing line by line
-                self.seq_id.append(record.id)
-                sequence = str(record.seq)
-                replace_sequence = self.modify_TIS_in_frame(sequence)
-                modified_sequences.append(replace_sequence)
-                
-        self.to_fasta(modified_sequences, "sample_file_outputs")
-        return modified_sequences
+        # Find modified sequence which is returned by modify_TIS_in_frame()
+        replace_sequence = self.modify_TIS_in_frame(self.seq)
+
+       
+        return replace_sequence
 
     def modify_TIS_in_frame(self, sequence):
         '''
@@ -365,6 +360,7 @@ class SemperRecode:
 
         return aa
     def to_fasta(self, sequence, output_file_name):
+        # self.to_fasta(modified_sequences, "sample_file_outputs")
         '''
         Takes in a list of modified sequences and converts them back to FASTA format for exporting to users.
 
@@ -390,9 +386,9 @@ class SemperRecode:
 
         output = []
 
-        for i, seq in enumerate(sequence):
-            temp = SeqRecord(Seq(seq), id=f"{self.seq_id[i]}_semper_recode", description='')
-            output.append(temp)
+        # for seq in enumerate(sequence):
+        #     temp = SeqRecord(Seq(seq), id=f"{seq.id}_semper_recode", description='')
+        #     output.append(temp)
         '''
         i = index as wel iterated through sequence 
 
@@ -407,7 +403,7 @@ class SemperRecode:
         output_file = "tests/sample_file/" + output_file_name + ".fasta"
 
         with open(output_file, 'w') as file:
-            SeqIO.write(output, file, 'fasta')
+            SeqIO.write(sequence, file, 'fasta')
         
         '''
         Output: 
