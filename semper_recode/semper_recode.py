@@ -152,17 +152,17 @@ class SemperRecode:
         This way, we'll iterate through the updated list of sequence (new_seq) with modified sequence
         '''
         for pos in index:
-            # If AUG is the last codon, raise warning
-            if pos == len(sequence) - 3:
-                warnings.warn("There's an AUG at the end of the sequence which cannot be modified")
-                    
-            # Ignore the first AUG
-            if pos != 0:
-                sub_str = ''.join(new_seq[pos-6:pos+5])
-                internal_TIS_seq = Seq(sub_str)
+            # Ignore the first and last AUG
+            if pos != 0 and pos != len(sequence) - 3:
 
-                sub_str = ''.join(new_seq[pos-6:pos+6])
-                aa4 = Seq(sub_str).translate()
+                if pos == len(sequence) - 3:
+                    warnings.warn("There's an AUG at the end of the sequence which cannot be modified")
+
+                sub_1 = ''.join(new_seq[pos-6:pos+5])
+                internal_TIS_seq = Seq(sub_1)
+
+                sub_2 = ''.join(new_seq[pos-6:pos+6])
+                aa4 = Seq(sub_2).translate()
 
                 # Get the current efficiency level 
                 current_eff = self.efficiency_level(internal_TIS_seq)
@@ -175,12 +175,10 @@ class SemperRecode:
                 If a new sequence with a lower efficiency is not found,
                 print a message telling the user to consider mutate/remove the sequence
                 '''
-
                 new_seq[pos-6:pos+6] = filtered["4-codons"].iloc[0]
-                    
-                if(int(new_eff) >= current_eff):
-                    warnings.warn(f"No sequence with lower efficiency is found for {internal_TIS_seq}\nConsider mutate/remove the sequence")
-
+                
+                if(int(new_eff) == current_eff):
+                    warnings.warn(f"No sequence with lower efficiency is found for {internal_TIS_seq}, consider mutate/remove the sequence")
 
         return ''.join(new_seq)
 
