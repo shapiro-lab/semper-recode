@@ -1,4 +1,5 @@
 import os
+import re
 import pickle
 import warnings
 import pandas as pd
@@ -17,35 +18,35 @@ FileNotFoundError
     If any of the required data files are not found.
 
 '''
-start_codon = ['ATG']
-path = "data/" 
+START_CODON = ['ATG']
+PATH = "data/" 
 
 # Master dataframe
-master_df_path = os.path.join(path, 'master_df_os_2023.csv')
-if not os.path.exists(master_df_path):
-    raise FileNotFoundError(f"Master dataframe file not found: {master_df_path}")
+MASTER_DF_PATH = os.path.join(PATH, 'master_df_os_2023.csv')
+if not os.path.exists(MASTER_DF_PATH):
+    raise FileNotFoundError(f"Master dataframe file not found: {MASTER_DF_PATH}")
         
-master_df = pd.read_csv(path + 'master_df_os_2023.csv')
+MASTER_DF = pd.read_csv(PATH + 'master_df_os_2023.csv')
 
 # Load codon list
-codon_list_path = os.path.join(path, 'codon_list.pkl')
-if not os.path.exists(codon_list_path):
-    raise FileNotFoundError(f"Codon list (.pkl) file not found: {codon_list_path}")
+CODON_LIST_PATH = os.path.join(PATH, 'codon_list.pkl')
+if not os.path.exists(CODON_LIST_PATH):
+    raise FileNotFoundError(f"Codon list (.pkl) file not found: {CODON_LIST_PATH}")
 
-with open(codon_list_path, 'rb') as file:
-    codon_list = pickle.load(file)
+with open(CODON_LIST_PATH, 'rb') as file:
+    CODON_LIST = pickle.load(file)
 
-if codon_list == {}:
+if CODON_LIST == {}:
     raise ValueError("codon_list is empty")
 
 # Load codon dictionary
-codon_dict_path = os.path.join(path, 'codon_dict.pkl')
+CODON_DICT_PATH = os.path.join(PATH, 'codon_dict.pkl')
 
-with open(codon_dict_path, 'rb') as file:
-    codon_dict = pickle.load(file)
+with open(CODON_DICT_PATH, 'rb') as file:
+    CODON_DICT = pickle.load(file)
         
 # Four letters codes
-four_letter_codes = list(master_df['4-letters'].unique())  # Get unique four-letter codes from master_df
+FOUR_LETTERS_CODE = list(MASTER_DF['4-letters'].unique())  # Get unique four-letter codes from master_df
 
 
 '''
@@ -71,7 +72,6 @@ class SemperRecode:
         Parameters
         ----------
         user_seq : str
-            User-input sequence as the result of .fasta file being parsed by users
 
         Raises
         ------
@@ -80,14 +80,11 @@ class SemperRecode:
             2. If input sequence contains "u" or "U"
 
         """
-        global master_df
-        self.master_df = master_df
+        self.master_df = MASTER_DF
+        self.start_codon = START_CODON
 
-        global start_codon
-        self.start_codon = start_codon
-
-        # Convert user input sequence into str (string)
-        self.seq = str(user_seq)
+        # Convert user input sequence into str
+        self.seq = str(user_seq).upper()
 
         # Check if user input sequence is empty
         if len(self.seq) == 0 or self.seq.isspace():
@@ -96,6 +93,11 @@ class SemperRecode:
         # Raise ValueError if user input sequence contains "u" or "U"
         if "U" in self.seq or "u" in self.seq:
             raise ValueError(f"U or u found in the input sequence {self.seq}")
+        
+        # Raise ValueError if the sequence contains any character other than A, T, C, G
+        pattern = r'[^ATCG]'
+        if re.search(pattern, self.seq):
+            raise ValueError("Invalid character found in the string.")
     
     def process_sequence(self):
         """
@@ -341,7 +343,7 @@ class SemperRecode:
         # Find the corresponding amino acid (ex: 'A', 'R', 'N')
         aa = ""
 
-        for key, value in codon_list.items():
+        for key, value in CODON_LIST.items():
             if original_codon in value:
                 aa = key
                 break

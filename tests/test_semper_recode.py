@@ -44,7 +44,7 @@ def test_find_in_frame():
     assert obj1.find_in_frame(sample1) == [0,6,12] 
     
     # Out-of-frame AUGs
-    sample2 = "ATTGTTTATGGCCATTTGSATG"
+    sample2 = "ATTGTTTATGGCCATTTGGAT"
     obj2 = SemperRecode(sample2)
     assert obj2.find_in_frame(sample2) == []
 

@@ -17,10 +17,22 @@ SemperRecode is a Python package designed for computational biologists and genet
 
 ## Installation
 
-SemperRecode can be installed via pip using the following command:
+1. Clone the repository to your local machine. You can do this by running the following command in your terminal or command prompt:
+
+```shell
+git clone https://github.com/ishaanjdev/semper-recode.git
+```
+
+2. SemperRecode can be installed via pip using the following command:
 
 ```shell
 pip install SemperRecode
+```
+
+3. After the installation is complete, you can import the library in your Python script or interactive session by using the following statement:
+
+```shell
+import semper_recode
 ```
 
 Alternatively
@@ -44,7 +56,13 @@ Before using this package, make sure you have the following dependencies install
 You can install these dependencies using pip:
 
 ```shell
-pip install pandas numpy biopython pytest
+pip install pandas biopython pytest
+```
+
+or
+
+```shell
+pip install -r requirements.txt
 ```
 
 After installing the package and its dependencies, you can import the required modules in your Python script as follows:
@@ -88,10 +106,6 @@ with open("tests/sample_file/sample_inputs.fasta", 'r') as file:
         input = str(line.seq)
         obj = SemperRecode(input)
         new_seq = obj.process_sequence()
-
-        # Assert the generated sequence match the correctly modified sequence
-        assert new_seq in groud_truth 
-
         modified_seq = SeqRecord(Seq(new_seq), id=f"{line.id}_semper_recode", description='')
         output.append(modified_seq)
 
