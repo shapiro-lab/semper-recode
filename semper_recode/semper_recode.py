@@ -48,7 +48,6 @@ with open(CODON_DICT_PATH, 'rb') as file:
 # Four letters codes
 FOUR_LETTERS_CODE = list(MASTER_DF['4-letters'].unique())  # Get unique four-letter codes from master_df
 
-
 '''
 Functions:
     > data_prep(self, path)
