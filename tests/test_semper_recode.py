@@ -57,6 +57,25 @@ def test_find_in_frame():
     obj4 = SemperRecode(sample4)
     assert obj4.find_in_frame(sample4) == [0, 30, 78, 90]
 
+# ================== TEST FIND_OUT_OF_FRAME ==================
+
+def test_find_out_of_frame(obj):
+    """
+    Purpose: Verify the functionality of the `find_out_of_frame` method in the SemperRecode class.
+    Goal: Ensure that the method correctly identifies out-of-frame AUGs and even when there's extra nucleotide 
+          in the sequence & in-frame AUG present and returns their positions in the given sequence as list.
+    """
+    assert obj.find_out_of_frame("AAAATG") == [] # No out-of-frame AUG
+    assert obj.find_out_of_frame("ATGAATGAT") == [4]
+    assert obj.find_out_of_frame("ATTGTTTATGGCCATTTGGAT") == [7]
+    assert obj.find_out_of_frame("AATGTTTATGGCATGTTGGAT") == [1,7]
+    assert obj.find_out_of_frame("AATGTATATGGCATGTTGGAT") == [1, 7]
+    assert obj.find_out_of_frame("AATGTTTATGGCATGTTGGATATG") == [1, 7]
+    assert obj.find_out_of_frame("ATTGTTTAGGGCCATTTGGAT") == [] # No AUG
+    assert obj.find_out_of_frame("AATGTTTATGGCATGTTGAT") == [1, 7] # 2 extra nucleotide
+    assert obj.find_out_of_frame("AATGTTTATGGCCTGTTGGATATG") == [1, 7] # In-frame and out-of-frame sequence
+
+
 # ============= TEST EFFICIENCY_LEVEL =============
 
 def test_efficiency_level_with_exist_sequence(obj):
@@ -131,7 +150,49 @@ def test_get_aa_alternative(obj):
     Goal: Ensure that the alternative codon and its fraction are returned correctly when given the old codon and .
     """
 
-    assert obj.get_aa_alternative("GCC") == "A"
+    aa, val = obj.get_aa_alternative("AGA")
+    assert aa == "AGG" and val == 0.2134612754706659
+
+    aa, val = obj.get_aa_alternative("AAT")
+    assert aa == "AAC" and val == 0.5184461245612413
+
+    aa, val = obj.get_aa_alternative("CCA")
+    assert aa == "CCC" and val == 0.3214351373711047
+
+    aa, val = obj.get_aa_alternative("TGG") # There's only 1 codon that produce W (Trp)
+    assert aa == "TGG" and val == 1.0
+
+    aa, val = obj.get_aa_alternative("ATG") # There's only 1 codon that produce M (Met)
+    assert aa == "ATG" and val == 1.0
+
+# ============= TEST RETURN_KEY =============
+
+def test_return_key(obj):
+    """
+    Purpose: Test the `return_key` method in the SemperRecode class.
+    Goal: Ensure that the key (ex: A, R, N, P) is returned correctly when given the codon.
+    """
+
+    assert obj.return_key("CCA") == "P"
+    assert obj.return_key("CTG") == "L"
+    assert obj.return_key("GAG") == "E"
+    assert obj.return_key("GCA") == "A"
+    assert obj.return_key("TCG") == "S"
+    assert obj.return_key("GAA") == "E"
+
+    assert obj.return_key("TGG") == "W"
+    assert obj.return_key("TAG") == "*"
+    assert obj.return_key("CGT") == "R"
+    assert obj.return_key("AAA") == "K"
+
+# ============= TEST MODIFY_TIS_OUT_OF_FRAME =============
+
+def test_modify_TIS_out_of_frame(obj):
+    assert obj.modify_TIS_out_of_frame("AATGAT") == "AACGAT" # Out-of-frame AUG /
+    assert obj.modify_TIS_out_of_frame("ATGAATGAT") == "ATGAACGAT" # In-frame AUG at the start X
+    assert obj.modify_TIS_out_of_frame("AATGATATG") == "AACGATATG" # In-frame AUG at the end /
+    assert obj.modify_TIS_out_of_frame("ATGAATGATATG") == "ATGAACGATATG" # Out-of-frame AUG
+    assert obj.modify_TIS_out_of_frame("CAATGC") == "CAATGT" # Out-of-frame AUG
 
 # ============= TEST PROCESS_SEQUENCE =============
 

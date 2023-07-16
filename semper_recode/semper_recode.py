@@ -82,8 +82,8 @@ class SemperRecode:
         self.master_df = MASTER_DF
         self.start_codon = START_CODON
 
-        # Convert user input sequence into str
-        self.seq = str(user_seq).upper()
+        # Convert user input sequence into str, remove blank space, and capitalize the string
+        self.seq = str(user_seq).replace(" ", "").upper()
 
         # Check if user input sequence is empty
         if len(self.seq) == 0 or self.seq.isspace():
@@ -251,7 +251,6 @@ class SemperRecode:
         '''
         new_seq = list(sequence)
         index = self.find_out_of_frame(sequence) # Get the indices fo out-of-frame AUG(s)
-        df = self.master_df
 
         '''
         Iterate through sequene and modify sequence to get rid of any out-of-frame AUG(s)
@@ -260,9 +259,9 @@ class SemperRecode:
 
         for pos in index:
             # Break the it down into 2 codons according to its proper codon frame
-            first_aa = sequence[pos%3: pos%3 + 2]
-            second_aa = sequence[pos%3 + 2 : pos%3 + 4]
-
+            start = pos - pos%3
+            first_aa = sequence[start : start + 3]
+            second_aa = sequence[start + 3 : start + 6]
 
             '''
             Find the other codon sequence (if any) which produce the same 
@@ -283,11 +282,53 @@ class SemperRecode:
             Compare which pair of codon (the old and the new one) has the least difference in fraction value
             When the pair is found, replace the old codon with the new codon
             '''
+            first_aa_key = self.return_key(first_aa)
+            first_old_val = CODON_DICT[first_aa_key][first_aa]
 
+            second_aa_key = self.return_key(second_aa)
+            second_old_val = CODON_DICT[second_aa_key][second_aa]
             
+
+            first_new_aa, first_new_val = self.get_aa_alternative(first_aa)
+            second_new_aa, second_new_val = self.get_aa_alternative(second_aa)
+
+            first_aa_diff = abs(first_new_val - first_old_val)
+            second_aa_diff = abs(second_new_val - second_old_val)
+
+            '''
+            Replace the codon with the least fraction difference
+            i.e. if the fraction difference between the old and the new amino acids of first aa is greater,
+            replace the second codon with the new codon
+            '''
             
+            if second_aa_diff > first_aa_diff:
+                new_seq[start : start + 3] = first_new_aa # Replace the first codon
+            else: 
+                new_seq[start + 3 : start + 6] = second_new_aa # Replace the second codon
 
         return ''.join(new_seq)
+    
+    def return_key(self, codon):
+        '''
+        Takes in codon sequence and return the key (str) which is the abbreviation of the codon
+
+        Parameters
+        ----------
+            codon : str
+
+        Returns
+        -------
+            key (str)
+
+        '''
+        key = ""
+
+        for char, value in CODON_LIST.items():
+            if codon in value:
+                key = char
+                break
+
+        return key
     
     def find_out_of_frame(self, sequence):
         """
@@ -340,24 +381,18 @@ class SemperRecode:
 
         '''
         # Find the corresponding amino acid (ex: 'A', 'R', 'N')
-        aa = ""
+        aa = self.return_key(original_codon)
 
-        for key, value in CODON_LIST.items():
-            if original_codon in value:
-                aa = key
-                break
+        codon = list(CODON_DICT[aa].keys())
+        index = 0
 
-        # codon = list(codon_dict[aa].keys())
-        # index = 0
+        # If the codon is the same as the original one and there's alternatives, get to the next one
+        if codon[0] == original_codon and len(codon) > 1:
+            index += 1
 
-        # # If the codon is the same as the original one, get to the next one
-        # index += 1 if codon == original_codon else 0
+        value = CODON_DICT[aa][codon[index]]
 
-        # value = codon_dict[aa][codon[index]]
-
-        # return codon, int(value)
-
-        return aa
+        return codon[index], value
     
     def to_fasta(self, sequence, output_file_name):
         '''
