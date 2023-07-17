@@ -57,7 +57,8 @@ Functions:
             > efficiency_level(self, sequence)
         > modify_TIS_out_of_frame(self, sequence)
             > find_out_of_frame(self, sequence)
-            > get_aa_key(self, sequence)
+            > find_key(self, codon)
+            > get_aa_key(self, original_codon)
     > to_fasta(self, sequence, output_file_name)
     > filtered_sequence_eff(self, efficiency)
     > find_lower_eff_sequence(self, efficiency, seq)
@@ -118,9 +119,15 @@ class SemperRecode:
         None
 
         """
+        replace_sequence = self.seq
+        round = 0
 
-        # Find modified sequence which is returned by modify_TIS_in_frame()
-        replace_sequence = self.modify_TIS_in_frame(self.seq)
+        # Loop through modify_TIS_in_frame() and modify_TIS_out_of_frame() while there is out-of-frame AUGs or the loop hasn't reached 10 times
+        while self.find_out_of_frame(replace_sequence) != [] and round < 10:
+            # Find modified sequence which is returned by modify_TIS_in_frame()
+            temp = self.modify_TIS_in_frame(self.seq)
+            replace_sequence = self.modify_TIS_out_of_frame(temp)
+            round += 1
 
         return replace_sequence
 
@@ -211,7 +218,7 @@ class SemperRecode:
 
         Parameters
         ----------
-        sequence : str or Seq obj
+        sequence : str
             The input sequence to find efficiency level.
         
         Returns
@@ -234,23 +241,23 @@ class SemperRecode:
             raise ValueError(f"The sequence {sequence} is not found in the dataframe")
 
         return match['efficiency'].iloc[0]
-
     
     def modify_TIS_out_of_frame(self, sequence):
         '''
-        Takes in sequence (str or Seq object) and return modified sequence
-        with lower TIS efficiency (str ot Seq object)
+        Takes in sequence (str) and return modified sequence
+        with lower TIS efficiency (str)
 
         Parameters
         ----------
-            sequence : str or Seq object
+            sequence : str
 
         Returns
         -------
             modified_sequence (str)
         '''
+
         new_seq = list(sequence)
-        index = self.find_out_of_frame(sequence) # Get the indices fo out-of-frame AUG(s)
+        index = self.find_out_of_frame(sequence) # Get the indices of out-of-frame AUG(s)
 
         '''
         Iterate through sequene and modify sequence to get rid of any out-of-frame AUG(s)
@@ -264,34 +271,22 @@ class SemperRecode:
             second_aa = sequence[start + 3 : start + 6]
 
             '''
-            Find the other codon sequence (if any) which produce the same 
-            amino acid as the key using the self.codon_dict which contains
-            amino acid's name, all possible codon sequence, and its fraction
-
-            {'A': {'GCC': 0.3975938884126084, 'GCT': 0.2626759965707805,
-            'GCA': 0.2301414614526459, 'GCG': 0.1095886535639651}, .......
-
-            Ex: 
-                Given: 'N': {'AAC': 0.5184461245612413, 'AAT': 0.4815538754387587},
-                Say our first_aa is 'AAC', then we get 'AAT'
-            '''
-            # first_aa_new_codon, first_aa_new_codon_value = self.get_aa_alternative(first_aa)
-            # second_aa_new_codon, second_aa_new_codon_value = self.get_aa_alternative(second_aa)
-            
-            '''
-            Compare which pair of codon (the old and the new one) has the least difference in fraction value
+            Compare which codon (the old and the new one) has the least difference in fraction value
             When the pair is found, replace the old codon with the new codon
             '''
+            # Get the fraction value of the first old codon
             first_aa_key = self.return_key(first_aa)
             first_old_val = CODON_DICT[first_aa_key][first_aa]
 
+            # Get the fraction value of the second old codon
             second_aa_key = self.return_key(second_aa)
             second_old_val = CODON_DICT[second_aa_key][second_aa]
             
-
+            # Get the codons and fraction values of the two new codons
             first_new_aa, first_new_val = self.get_aa_alternative(first_aa)
             second_new_aa, second_new_val = self.get_aa_alternative(second_aa)
 
+            # Find the difference between each pair of codons (old and new)
             first_aa_diff = abs(first_new_val - first_old_val)
             second_aa_diff = abs(second_new_val - second_old_val)
 
@@ -363,12 +358,12 @@ class SemperRecode:
 
     def get_aa_alternative(self, original_codon):
         '''
-        Takes in original_codon (ex: 'GCC', 'GAG', 'TCA') then return 1. the codon which produce the key amino acid 
-        with highest fraction (other than the original codon itself) and 2. The fraction of that codon
+        Takes in original_codon (ex: 'GCC', 'GAG', 'TCA') then return:
+            1. the codon which produce the key amino acid with highest fraction (other than the original codon itself)
+            2. The fraction of that codon
 
-        Sample outout
-        Input: get_aa_key('GCC')
-        Output: 'GCT', 0.2301414614526459
+        Sample code: get_aa_key('GCC')
+        Output: 'GCT', 0.2301414614526459 
 
         Parameters
         ----------
@@ -383,16 +378,18 @@ class SemperRecode:
         # Find the corresponding amino acid (ex: 'A', 'R', 'N')
         aa = self.return_key(original_codon)
 
-        codon = list(CODON_DICT[aa].keys())
+        # Get all the possible codons which product the key (ex: ['CAC': 0.5742015169781323, 'CAT': 0.4257984830218677])
+        codons = list(CODON_DICT[aa].keys())
         index = 0
 
-        # If the codon is the same as the original one and there's alternatives, get to the next one
-        if codon[0] == original_codon and len(codon) > 1:
+        # If the codon is the same as the original one and there's an alternative, get to the next one
+        if codons[0] == original_codon and len(codons) > 1:
             index += 1
 
-        value = CODON_DICT[aa][codon[index]]
+        # The fraction of the new codon
+        value = CODON_DICT[aa][codons[index]]
 
-        return codon[index], value
+        return codons[index], value
     
     def to_fasta(self, sequence, output_file_name):
         '''
