@@ -2,6 +2,8 @@
 Usage
 =====
 
-To use SEMPER Recode in a project::
+.. include:: ../semper_recode/semper_recode.py
 
-    import semper_recode
+.. .. automodule:: semper_recode
+    :members:
+

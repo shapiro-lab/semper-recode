@@ -1,4 +1,4 @@
-Welcome to Semper Recode's documentation!
+Semper Recode Documentation
 ======================================
 
 .. toctree::
@@ -13,8 +13,8 @@ Welcome to Semper Recode's documentation!
    authors
    history
 
-Indices and tables
-==================
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+.. Indices and tables
+.. ==================
+.. * :ref:`genindex`
+.. * :ref:`modindex`
+.. * :ref:`search`
