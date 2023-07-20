@@ -188,11 +188,13 @@ def test_return_key(obj):
 # ============= TEST MODIFY_TIS_OUT_OF_FRAME =============
 
 def test_modify_TIS_out_of_frame(obj):
-    assert obj.modify_TIS_out_of_frame("AATGAT") == "AACGAT" # Out-of-frame AUG /
-    assert obj.modify_TIS_out_of_frame("ATGAATGAT") == "ATGAACGAT" # In-frame AUG at the start X
+    assert obj.modify_TIS_out_of_frame("GGGAATGATGGG") == "GGGAACGATGGG" # Out-of-frame AUG /
+    assert obj.modify_TIS_out_of_frame("GGGATGAATGAT") == "GGGATGAACGAT" # In-frame AUG at the start X
     assert obj.modify_TIS_out_of_frame("AATGATATG") == "AACGATATG" # In-frame AUG at the end /
     assert obj.modify_TIS_out_of_frame("ATGAATGATATG") == "ATGAACGATATG" # Out-of-frame AUG
-    assert obj.modify_TIS_out_of_frame("CAATGC") == "CAATGT" # Out-of-frame AUG
+    assert obj.modify_TIS_out_of_frame("GCCCAATGCGCC") == "GCCCAATGTGCC" # Out-of-frame AUG
+    assert obj.modify_TIS_out_of_frame("CATGATGATGATGCC") == "####" # Consecutives Out-of-frame AUG
+    # Test the function on seq with consecutive out-of-frame AUG
 
 # ============= TEST PROCESS_SEQUENCE =============
 

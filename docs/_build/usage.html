@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Contributing" href="contributing.html" /><link rel="prev" title="Installation" href="installation.html" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="semper-recode" href="modules.html" /><link rel="prev" title="Installation" href="installation.html" />
 
     <!-- Generated with Sphinx 7.0.1 and Furo 2023.05.20 -->
         <title>Usage - SEMPER Recode 0.1.0 documentation</title>
@@ -159,7 +159,14 @@
 <li class="toctree-l1"><a class="reference internal" href="readme.html">Semper Recode</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Usage</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="modules.html">semper-recode</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of semper-recode</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="semper_recode.html">semper_recode package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="setup.html">setup module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tests.html">tests package</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="semper_recode.html">semper_recode package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="authors.html">Credits</a></li>
 <li class="toctree-l1"><a class="reference internal" href="history.html">History</a></li>
 </ul>
@@ -198,484 +205,328 @@
         <article role="main">
           <section id="usage">
 <h1>Usage<a class="headerlink" href="#usage" title="Permalink to this heading">#</a></h1>
-<p>import os
-import re
-import pickle
-import warnings
-import pandas as pd
-from Bio import SeqIO
-from Bio.Seq import Seq
-from Bio.SeqRecord import SeqRecord</p>
-<p>‘’’
-Global variables declaration</p>
-<p>Loads data required for the analysis. Reads various data files and initializes necessary attributes.</p>
-<section id="raises">
-<h2>Raises<a class="headerlink" href="#raises" title="Permalink to this heading">#</a></h2>
 <dl class="simple">
-<dt>FileNotFoundError</dt><dd><p>If any of the required data files are not found.</p>
+<dt><strong>Overview:</strong></dt><dd><ul class="simple">
+<li><p><code class="xref py py-func docutils literal notranslate"><span class="pre">data_prep()</span></code></p></li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="#process_sequence" title="process_sequence"><code class="xref py py-func docutils literal notranslate"><span class="pre">process_sequence()</span></code></a></dt><dd><ul>
+<li><dl class="simple">
+<dt><a class="reference internal" href="#modify_TIS_in_frame" title="modify_TIS_in_frame"><code class="xref py py-func docutils literal notranslate"><span class="pre">modify_TIS_in_frame()</span></code></a></dt><dd><ul>
+<li><p><a class="reference internal" href="#find_in_frame" title="find_in_frame"><code class="xref py py-func docutils literal notranslate"><span class="pre">find_in_frame()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#efficiency_level" title="efficiency_level"><code class="xref py py-func docutils literal notranslate"><span class="pre">efficiency_level()</span></code></a></p></li>
+</ul>
 </dd>
 </dl>
-<p>‘’’
-START_CODON = [‘ATG’]
-PATH = “data/”</p>
-<p># Master dataframe
-MASTER_DF_PATH = os.path.join(PATH, ‘master_df_os_2023.csv’)
-if not os.path.exists(MASTER_DF_PATH):</p>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="#modify_TIS_out_of_frame" title="modify_TIS_out_of_frame"><code class="xref py py-func docutils literal notranslate"><span class="pre">modify_TIS_out_of_frame()</span></code></a></dt><dd><ul>
+<li><p><a class="reference internal" href="#find_out_of_frame" title="find_out_of_frame"><code class="xref py py-func docutils literal notranslate"><span class="pre">find_out_of_frame()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#get_aa_alternative" title="get_aa_alternative"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_aa_alternative()</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p><a class="reference internal" href="#to_fasta" title="to_fasta"><code class="xref py py-func docutils literal notranslate"><span class="pre">to_fasta()</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+<hr class="docutils" />
+<section id="global-variables">
+<h2>Global Variables<a class="headerlink" href="#global-variables" title="Permalink to this heading">#</a></h2>
 <blockquote>
-<div><p>raise FileNotFoundError(f”Master dataframe file not found: {MASTER_DF_PATH}”)</p>
+<div><dl class="py data">
+<dt class="sig sig-object py" id="START_CODON">
+<span class="sig-name descname"><span class="pre">START_CODON</span></span><a class="headerlink" href="#START_CODON" title="Permalink to this definition">#</a></dt>
+<dd><p>The start codon list.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="PATH">
+<span class="sig-name descname"><span class="pre">PATH</span></span><a class="headerlink" href="#PATH" title="Permalink to this definition">#</a></dt>
+<dd><p>The path to the data folder.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="MASTER_DF">
+<span class="sig-name descname"><span class="pre">MASTER_DF</span></span><a class="headerlink" href="#MASTER_DF" title="Permalink to this definition">#</a></dt>
+<dd><p>The master dataframe containing data required for the analysis.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="CODON_LIST">
+<span class="sig-name descname"><span class="pre">CODON_LIST</span></span><a class="headerlink" href="#CODON_LIST" title="Permalink to this definition">#</a></dt>
+<dd><p>The codon list loaded from a .pkl file.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="CODON_DICT">
+<span class="sig-name descname"><span class="pre">CODON_DICT</span></span><a class="headerlink" href="#CODON_DICT" title="Permalink to this definition">#</a></dt>
+<dd><p>The codon dictionary loaded from a .pkl file.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="FOUR_LETTERS_CODE">
+<span class="sig-name descname"><span class="pre">FOUR_LETTERS_CODE</span></span><a class="headerlink" href="#FOUR_LETTERS_CODE" title="Permalink to this definition">#</a></dt>
+<dd><p>List of unique four-letter codes from the master dataframe.</p>
+</dd></dl>
+
 </div></blockquote>
-<p>MASTER_DF = pd.read_csv(PATH + ‘master_df_os_2023.csv’)</p>
-<p># Load codon list
-CODON_LIST_PATH = os.path.join(PATH, ‘codon_list.pkl’)
-if not os.path.exists(CODON_LIST_PATH):</p>
-<blockquote>
-<div><p>raise FileNotFoundError(f”Codon list (.pkl) file not found: {CODON_LIST_PATH}”)</p>
+</section>
+<hr class="docutils" />
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this heading">#</a></h2>
+<dl class="py method">
+<dt class="sig sig-object py" id="process_sequence">
+<span class="sig-name descname"><span class="pre">process_sequence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#process_sequence" title="Permalink to this definition">#</a></dt>
+<dd><blockquote>
+<div><p>Uses the nucleotide sequence input through the constructor and returns the modified sequence with lower efficiency (if any).</p>
 </div></blockquote>
-<dl class="simple">
-<dt>with open(CODON_LIST_PATH, ‘rb’) as file:</dt><dd><p>CODON_LIST = pickle.load(file)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The modified sequence with lower TIS efficiency (if any).</p>
 </dd>
-<dt>if CODON_LIST == {}:</dt><dd><p>raise ValueError(“codon_list is empty”)</p>
-</dd>
-</dl>
-<p># Load codon dictionary
-CODON_DICT_PATH = os.path.join(PATH, ‘codon_dict.pkl’)</p>
-<dl class="simple">
-<dt>with open(CODON_DICT_PATH, ‘rb’) as file:</dt><dd><p>CODON_DICT = pickle.load(file)</p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
 </dd>
 </dl>
-<p># Four letters codes
-FOUR_LETTERS_CODE = list(MASTER_DF[‘4-letters’].unique())  # Get unique four-letter codes from master_df</p>
-<p>‘’’
-Functions:</p>
-<blockquote>
-<div><p>&gt; data_prep(self, path)
-&gt; process_sequence(self)</p>
-<blockquote>
-<div><dl class="simple">
-<dt>&gt; modify_TIS_in_frame(self, sequence)</dt><dd><p>&gt; find_in_frame(self, sequence)
-&gt; efficiency_level(self, sequence)</p>
-</dd>
-<dt>&gt; modify_TIS_out_of_frame(self, sequence)</dt><dd><p>&gt; find_out_of_frame(self, sequence)
-&gt; find_key(self, codon)
-&gt; get_aa_key(self, original_codon)</p>
-</dd>
-</dl>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="py method">
+<dt class="sig sig-object py" id="modify_TIS_in_frame">
+<span class="sig-name descname"><span class="pre">modify_TIS_in_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sequence</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#modify_TIS_in_frame" title="Permalink to this definition">#</a></dt>
+<dd><blockquote>
+<div><p>Takes in a sequence and returns a modified sequence with lower TIS efficiency by modifying internal AUGs in the frame.</p>
 </div></blockquote>
-<p>&gt; to_fasta(self, sequence, output_file_name)
-&gt; filtered_sequence_eff(self, efficiency)
-&gt; find_lower_eff_sequence(self, efficiency, seq)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>sequence</strong> (<em>str</em>) – The input nucleotide sequence.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The modified sequence with lower TIS efficiency.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="py method">
+<dt class="sig sig-object py" id="find_in_frame">
+<span class="sig-name descname"><span class="pre">find_in_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sequence</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#find_in_frame" title="Permalink to this definition">#</a></dt>
+<dd><blockquote>
+<div><p>Takes in a sequence and returns a list of indices where the in-frame AUG codon is found.</p>
 </div></blockquote>
-<p>‘’’</p>
-<dl>
-<dt>class SemperRecode:</dt><dd><dl>
-<dt>def __init__(self, user_seq):</dt><dd><p>“””
-Initializes the SemperRecode object.</p>
-<p>user_seq : str</p>
-<dl class="simple">
-<dt>ValueError</dt><dd><ol class="arabic simple">
-<li><p>If input sequence is blank.</p></li>
-<li><p>If input sequence contains “u” or “U”</p></li>
-</ol>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>sequence</strong> (<em>str</em>) – The input nucleotide sequence.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of integers representing the indices of in-frame AUG codons in the sequence.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
 </dd>
 </dl>
-<p>“””
-self.master_df = MASTER_DF
-self.start_codon = START_CODON</p>
-<p># Convert user input sequence into str, remove blank space, and capitalize the string
-self.seq = str(user_seq).replace(” “, “”).upper()</p>
-<p># Check if user input sequence is empty
-if len(self.seq) == 0 or self.seq.isspace():</p>
-<blockquote>
-<div><p>raise ValueError(“No sequence input”)</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="py method">
+<dt class="sig sig-object py" id="efficiency_level">
+<span class="sig-name descname"><span class="pre">efficiency_level</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sequence</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#efficiency_level" title="Permalink to this definition">#</a></dt>
+<dd><blockquote>
+<div><p>Takes in a sequence and returns the efficiency level.</p>
 </div></blockquote>
-<p># Raise ValueError if user input sequence contains “u” or “U”
-if “U” in self.seq or “u” in self.seq:</p>
-<blockquote>
-<div><p>raise ValueError(f”U or u found in the input sequence {self.seq}”)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>sequence</strong> (<em>str</em>) – The input nucleotide sequence.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The efficiency level of the sequence.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="py method">
+<dt class="sig sig-object py" id="modify_TIS_out_of_frame">
+<span class="sig-name descname"><span class="pre">modify_TIS_out_of_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sequence</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#modify_TIS_out_of_frame" title="Permalink to this definition">#</a></dt>
+<dd><blockquote>
+<div><p>Takes in a sequence and returns a modified sequence with lower TIS efficiency by modifying out-of-frame AUGs.</p>
 </div></blockquote>
-<p># Raise ValueError if the sequence contains any character other than A, T, C, G
-pattern = r’[^ATCG]’
-if re.search(pattern, self.seq):</p>
-<blockquote>
-<div><p>raise ValueError(“Invalid character found in the string.”)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>sequence</strong> (<em>str</em>) – The input nucleotide sequence.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The modified sequence with lower TIS efficiency.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="py method">
+<dt class="sig sig-object py" id="return_key">
+<span class="sig-name descname"><span class="pre">return_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">codon</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#return_key" title="Permalink to this definition">#</a></dt>
+<dd><blockquote>
+<div><p>Takes in a codon sequence and returns the abbreviation of the codon.</p>
 </div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>codon</strong> (<em>str</em>) – The input codon sequence.</p>
 </dd>
-<dt>def process_sequence(self):</dt><dd><p>“””
-Uses the nucleotide sequence input through the constructor and returns the modified sequence with lower efficiency (if any).
-Loop through modify_TIS_in_frame() and modify_TIS_out_of_frame() to ensure there’s no out-of-frame internal AUG and that the
-expressional level is the lowest it could possibly be</p>
-<p>None</p>
-<dl class="simple">
-<dt>replace_sequence<span class="classifier">str</span></dt><dd><p>String of modified sequences of the input sequence.</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The abbreviation of the codon.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
 </dd>
 </dl>
-<p>None</p>
-<p>“””
-replace_sequence = self.seq
-round = 0</p>
-<p># Loop through modify_TIS_in_frame() and modify_TIS_out_of_frame() while there is out-of-frame AUGs or the loop hasn’t reached 10 times
-while self.find_out_of_frame(replace_sequence) != [] and round &lt; 10:</p>
-<blockquote>
-<div><p># Find modified sequence which is returned by modify_TIS_in_frame()
-temp = self.modify_TIS_in_frame(self.seq)
-replace_sequence = self.modify_TIS_out_of_frame(temp)
-round += 1</p>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="py method">
+<dt class="sig sig-object py" id="find_out_of_frame">
+<span class="sig-name descname"><span class="pre">find_out_of_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sequence</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#find_out_of_frame" title="Permalink to this definition">#</a></dt>
+<dd><blockquote>
+<div><p>Takes in a sequence and returns a list of indices where the out-of-frame AUG codon is found.</p>
 </div></blockquote>
-<p>return replace_sequence</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>sequence</strong> (<em>str</em>) – The input nucleotide sequence.</p>
 </dd>
-<dt>def modify_TIS_in_frame(self, sequence):</dt><dd><p>‘’’
-Takes in sequence (str) and return modified sequence with lower TIS efficiency (str)
-by getting all the index location of internal AUG from find_in_frame() and modify the sequence accordingly</p>
-<blockquote>
-<div><p>sequence : str</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of integers representing the indices of out-of-frame AUG codons in the sequence.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="py method">
+<dt class="sig sig-object py" id="get_aa_alternative">
+<span class="sig-name descname"><span class="pre">get_aa_alternative</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">original_codon</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#get_aa_alternative" title="Permalink to this definition">#</a></dt>
+<dd><blockquote>
+<div><p>Takes in an original codon and returns the codon producing the key amino acid with the highest fraction.</p>
 </div></blockquote>
-<blockquote>
-<div><p>modified_sequence (str)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>original_codon</strong> (<em>str</em>) – The original codon sequence.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The codon and the fraction of that codon.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="py method">
+<dt class="sig sig-object py" id="to_fasta">
+<span class="sig-name descname"><span class="pre">to_fasta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sequence</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_file_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#to_fasta" title="Permalink to this definition">#</a></dt>
+<dd><blockquote>
+<div><p>Takes in a list of modified sequences and converts them back to FASTA format for exporting to users.</p>
 </div></blockquote>
-<p>‘’’
-new_seq = list(sequence)
-index = self.find_in_frame(sequence) # Get the indices of in-frame AUG(s)
-df = self.master_df</p>
-<p>‘’’
-Convert the sequence to a list (new_seq) so that’s it’s mutable and when we iterate through the sequence,
-we can replace the TIS sequence with the modified sequence with lower efficiency according to the index
-of AUG return by find_in_frame()</p>
-<p>This way, we’ll iterate through the updated list of sequence (new_seq) with modified sequence
-‘’’
-for pos in index:</p>
-<blockquote>
-<div><p># Ignore the first and last AUG
-if pos != 0 and pos != len(sequence) - 3:</p>
-<blockquote>
-<div><dl class="simple">
-<dt>if pos == len(sequence) - 3:</dt><dd><p>warnings.warn(“There’s an AUG at the end of the sequence which cannot be modified”)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sequence</strong> (<em>list</em>) – The modified list of sequences to be converted to a FASTA file.</p></li>
+<li><p><strong>output_file_name</strong> (<em>str</em>) – The desired name of the output FASTA file.</p></li>
+</ul>
 </dd>
 </dl>
-<p>sub_1 = ‘’.join(new_seq[pos-6:pos+5])
-internal_TIS_seq = Seq(sub_1)</p>
-<p>sub_2 = ‘’.join(new_seq[pos-6:pos+6])
-aa4 = Seq(sub_2).translate()</p>
-<p># Get the current efficiency level
-current_eff = self.efficiency_level(internal_TIS_seq)</p>
-<p>filtered = df[df[‘4-letters’] == str(aa4)]
-new_eff = filtered[‘efficiency’].iloc[0]</p>
-<p>‘’’
-Replace the designated TIS sequence with the modified sequence
-If a new sequence with a lower efficiency is not found,
-print a message telling the user to consider mutate/remove the sequence
-‘’’
-new_seq[pos-6:pos+6] = filtered[“4-codons”].iloc[0]</p>
-<dl class="simple">
-<dt>if(int(new_eff) == current_eff):</dt><dd><p>warnings.warn(f”No sequence with lower efficiency is found for {internal_TIS_seq}, consider mutate/remove the sequence”)</p>
-</dd>
-</dl>
-</div></blockquote>
-</div></blockquote>
-<p>return ‘’.join(new_seq)</p>
-</dd>
-<dt>def find_in_frame(self, sequence):</dt><dd><p>“””
-Takes in a sequence (str) and returns a list of indices where the AUG codon is found.</p>
-<dl class="simple">
-<dt>sequence<span class="classifier">str</span></dt><dd><p>The input sequence to search for AUG codons.</p>
-</dd>
-</dl>
-<dl class="simple">
-<dt>pos<span class="classifier">list</span></dt><dd><p>A list of integers representing the indices of in-frame AUG codons in the sequence.</p>
-</dd>
-</dl>
-<p>“””
-pos = []  # position(s) of in-frame AUG in the string (sequence)</p>
-<p># Loop through codon by codon (start from 0, end at last codon, increase by 3)
-for i in range(0, len(sequence)-2, 3):</p>
-<blockquote>
-<div><p>codon = sequence[i:i+3]</p>
-<dl class="simple">
-<dt>if codon in self.start_codon:</dt><dd><p>pos.append(i)</p>
-</dd>
-</dl>
-</div></blockquote>
-<p>return pos</p>
-</dd>
-<dt>def efficiency_level(self, sequence):</dt><dd><p>‘’’
-Takes in sequence and return efficiency level</p>
-<dl class="simple">
-<dt>sequence<span class="classifier">str</span></dt><dd><p>The input sequence to find efficiency level.</p>
-</dd>
-</dl>
-<dl class="simple">
-<dt>eff<span class="classifier">int</span></dt><dd><p>An interger represent the efficiency level of the sequence when
-being compared with the master dataframe</p>
-</dd>
-</dl>
-<p>‘’’
-df = self.master_df</p>
-<p>‘’’
-Find the matching row in master_df with the same value in tis-sequence
-as the input sequence
-‘’’
-match = df[df[“tis-sequence”] == str(sequence)]</p>
-<dl class="simple">
-<dt>if match.empty:</dt><dd><p># No matching is found
-raise ValueError(f”The sequence {sequence} is not found in the dataframe”)</p>
-</dd>
-</dl>
-<p>return match[‘efficiency’].iloc[0]</p>
-</dd>
-<dt>def modify_TIS_out_of_frame(self, sequence):</dt><dd><p>‘’’
-Takes in sequence (str) and return modified sequence
-with lower TIS efficiency (str)</p>
-<blockquote>
-<div><p>sequence : str</p>
-</div></blockquote>
-<blockquote>
-<div><p>modified_sequence (str)</p>
-</div></blockquote>
-<p>‘’’</p>
-<p>new_seq = list(sequence)
-index = self.find_out_of_frame(sequence) # Get the indices of out-of-frame AUG(s)</p>
-<p>‘’’
-Iterate through sequene and modify sequence to get rid of any out-of-frame AUG(s)
-using the index from find_out_of_frame()
-‘’’</p>
-<dl>
-<dt>for pos in index:</dt><dd><p># Break the it down into 2 codons according to its proper codon frame
-start = pos - pos%3
-first_aa = sequence[start : start + 3]
-second_aa = sequence[start + 3 : start + 6]</p>
-<p>‘’’
-Compare which codon (the old and the new one) has the least difference in fraction value
-When the pair is found, replace the old codon with the new codon
-‘’’
-# Get the fraction value of the first old codon
-first_aa_key = self.return_key(first_aa)
-first_old_val = CODON_DICT[first_aa_key][first_aa]</p>
-<p># Get the fraction value of the second old codon
-second_aa_key = self.return_key(second_aa)
-second_old_val = CODON_DICT[second_aa_key][second_aa]</p>
-<p># Get the codons and fraction values of the two new codons
-first_new_aa, first_new_val = self.get_aa_alternative(first_aa)
-second_new_aa, second_new_val = self.get_aa_alternative(second_aa)</p>
-<p># Find the difference between each pair of codons (old and new)
-first_aa_diff = abs(first_new_val - first_old_val)
-second_aa_diff = abs(second_new_val - second_old_val)</p>
-<p>‘’’
-Replace the codon with the least fraction difference
-i.e. if the fraction difference between the old and the new amino acids of first aa is greater,
-replace the second codon with the new codon
-‘’’</p>
-<dl class="simple">
-<dt>if second_aa_diff &gt; first_aa_diff:</dt><dd><p>new_seq[start : start + 3] = first_new_aa # Replace the first codon</p>
-</dd>
-<dt>else:</dt><dd><p>new_seq[start + 3 : start + 6] = second_new_aa # Replace the second codon</p>
-</dd>
-</dl>
-</dd>
-</dl>
-<p>return ‘’.join(new_seq)</p>
-</dd>
-<dt>def return_key(self, codon):</dt><dd><p>‘’’
-Takes in codon sequence and return the key (str) which is the abbreviation of the codon</p>
-<blockquote>
-<div><p>codon : str</p>
-</div></blockquote>
-<blockquote>
-<div><p>key (str)</p>
-</div></blockquote>
-<p>‘’’
-key = “”</p>
-<dl class="simple">
-<dt>for char, value in CODON_LIST.items():</dt><dd><dl class="simple">
-<dt>if codon in value:</dt><dd><p>key = char
-break</p>
-</dd>
-</dl>
-</dd>
-</dl>
-<p>return key</p>
-</dd>
-<dt>def find_out_of_frame(self, sequence):</dt><dd><p>“””
-Takes in a sequence (str) and returns a list of indices where the out-of-frame AUG codon is found.</p>
-<dl class="simple">
-<dt>sequence<span class="classifier">str</span></dt><dd><p>The input sequence to search for AUG codons.</p>
-</dd>
-</dl>
-<dl class="simple">
-<dt>pos<span class="classifier">list</span></dt><dd><p>A list of integers representing the indices of out-of-frame AUG codons in the sequence.</p>
-</dd>
-</dl>
-<p>“””
-pos = []
-index = -1</p>
-<dl>
-<dt>for codon in self.start_codon:</dt><dd><p>index = -1</p>
-<dl>
-<dt>while True:</dt><dd><p>index = sequence.find(codon, index + 1)
-if index == -1:</p>
-<blockquote>
-<div><p>break</p>
-</div></blockquote>
-<dl class="simple">
-<dt>if index%3 != 0:</dt><dd><p>pos.append(index)</p>
-</dd>
-</dl>
-</dd>
-</dl>
-</dd>
-</dl>
-<p>return pos</p>
-</dd>
-<dt>def get_aa_alternative(self, original_codon):</dt><dd><p>‘’’
-Takes in original_codon (ex: ‘GCC’, ‘GAG’, ‘TCA’) then return:</p>
-<blockquote>
-<div><ol class="arabic simple">
-<li><p>the codon which produce the key amino acid with highest fraction (other than the original codon itself)</p></li>
-<li><p>The fraction of that codon</p></li>
-</ol>
-</div></blockquote>
-<p>Sample code: get_aa_key(‘GCC’)
-Output: ‘GCT’, 0.2301414614526459</p>
-<blockquote>
-<div><p>original_codon : str</p>
-</div></blockquote>
-<blockquote>
-<div><p>codon (str)
-value (int)</p>
-</div></blockquote>
-<p>‘’’
-# Find the corresponding amino acid (ex: ‘A’, ‘R’, ‘N’)
-aa = self.return_key(original_codon)</p>
-<p># Get all the possible codons which product the key (ex: [‘CAC’: 0.5742015169781323, ‘CAT’: 0.4257984830218677])
-codons = list(CODON_DICT[aa].keys())
-index = 0</p>
-<p># If the codon is the same as the original one and there’s an alternative, get to the next one
-if codons[0] == original_codon and len(codons) &gt; 1:</p>
-<blockquote>
-<div><p>index += 1</p>
-</div></blockquote>
-<p># The fraction of the new codon
-value = CODON_DICT[aa][codons[index]]</p>
-<p>return codons[index], value</p>
-</dd>
-<dt>def to_fasta(self, sequence, output_file_name):</dt><dd><p>‘’’
-Takes in a list of modified sequences and converts them back to FASTA format for exporting to users.</p>
-<dl class="simple">
-<dt>sequence<span class="classifier">list</span></dt><dd><p>The modified list of sequences to be converted to a FASTA file.</p>
-</dd>
-<dt>output_file_name<span class="classifier">str</span></dt><dd><p>The desired name of the output FASTA file.</p>
-</dd>
-</dl>
-<p>None</p>
-<dl class="simple">
-<dt>ValueError</dt><dd><p>If the sequence is empty.</p>
-</dd>
-</dl>
-<p>‘’’
-if not sequence:</p>
-<blockquote>
-<div><p>raise ValueError(“Sequence list is empty, unable to export”)</p>
-</div></blockquote>
-<p>output = []</p>
-<dl class="simple">
-<dt>for i, seq in enumerate(sequence):</dt><dd><p>temp = SeqRecord(Seq(seq), id=f’Seq{i+1}’, description=’’)
-output.append(temp)</p>
-</dd>
-</dl>
-<p>‘’’
-i = index as wel iterated through sequence</p>
-<p>In each iteration, a new SeqRecord object (Seq object but with additional metadata)
-is being created</p>
-<dl class="simple">
-<dt>Metadata:</dt><dd><p>id: The sequence original sequence name stored in self.seq_id
-description: None</p>
-</dd>
-</dl>
-</dd>
-</dl>
-</dd>
-<dt>1</dt><dd><blockquote>
-<div><p>‘’’
-output_file = “tests/sample_file/” + output_file_name + “.fasta”</p>
-<dl class="simple">
-<dt>with open(output_file, ‘w’) as file:</dt><dd><p>SeqIO.write(sequence, file, ‘fasta’)</p>
-</dd>
-</dl>
-<p>‘’’
-Output:
-&gt;Sequence1
-ATCGATCGATCG</p>
-<p>&gt;Sequence2
-GCTAGCTAGCTA</p>
-<p>&gt;Sequence3
-TGCAATGCAATG
-‘’’</p>
-</div></blockquote>
-<blockquote>
-<div><p>Exploratory analysis</p>
-</div></blockquote>
-<p>‘’’
-def filtered_sequence_eff(self, efficiency):</p>
-<blockquote>
-<div><p>“””
-Takes in efficiency level input and finds the sequences in the dataframe by filtering,
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="py method">
+<dt class="sig sig-object py" id="filtered_sequence_eff">
+<span class="sig-name descname"><span class="pre">filtered_sequence_eff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">efficiency</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#filtered_sequence_eff" title="Permalink to this definition">#</a></dt>
+<dd><blockquote>
+<div><p>Takes in the efficiency level input and finds the sequences in the dataframe by filtering,
 then displays all the possible sequences that have an efficiency lower than the given value
 and the percentage of found and missing amino acid sequences in the form of a dataframe.</p>
-<dl class="simple">
-<dt>efficiency<span class="classifier">float</span></dt><dd><p>The efficiency level to filter the dataframe.</p>
-</dd>
-</dl>
-<dl class="simple">
-<dt>pd.DataFrame</dt><dd><p>A dataframe containing the filtered sequences.</p>
-</dd>
-</dl>
-<p>“””
-df = self.master_df</p>
-<p>filtered = df[df[‘efficiency’] &lt; efficiency]
-count = filtered.shape[0]
-percent = (count / df.shape[0]) * 100</p>
-<p>groups = filtered.groupby(‘4-codons’)
-seq_names = groups[‘4-letters’].apply(lambda x: ‘, ‘.join(x.astype(str).unique())).tolist()</p>
-<p>set1 = set(self.four_letter_codes)
-set2 = set(seq_names)</p>
-<p>missing_elements = list(set1 - set2)</p>
-<p>found_percent = len(set2) / len(set1) * 100</p>
-<p>print(f”Total: {count} sequence(s) ({percent:.2f}%)”)
-print(f”Found ({found_percent:.2f}%): {’, ‘.join(set2)}”)
-print(f”Missing ({(100-found_percent):.2f}%): {’, ‘.join(missing_elements)}n”)</p>
-<dl class="simple">
-<dt>for each in groups:</dt><dd><p>print(each, “n”)</p>
-</dd>
-</dl>
-<p>return filtered.DataFrame</p>
 </div></blockquote>
-<dl>
-<dt>def find_lower_eff_sequence(self, efficiency, seq):</dt><dd><p>“””
-Takes in a nucleotide sequence and checks if there is another sequence that produces
-the same protein but with a lower efficiency level than the input level.</p>
-<dl class="simple">
-<dt>efficiency<span class="classifier">float</span></dt><dd><p>The efficiency level to filter the dataframe.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>efficiency</strong> (<em>float</em>) – The efficiency level to filter the dataframe.</p>
 </dd>
-<dt>seq<span class="classifier">Bio.Seq</span></dt><dd><p>nucleotide sequence</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dataframe containing the filtered sequences.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
 </dd>
 </dl>
-<dl class="simple">
-<dt>ValueError</dt><dd><p>If the given sequence doesn’t have replacing sequence with efficiency lower
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="py method">
+<dt class="sig sig-object py" id="find_lower_eff_sequence">
+<span class="sig-name descname"><span class="pre">find_lower_eff_sequence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">efficiency</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seq</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#find_lower_eff_sequence" title="Permalink to this definition">#</a></dt>
+<dd><blockquote>
+<div><p>Takes in a nucleotide sequence and checks if there is another sequence that produces
+the same protein but with a lower efficiency level than the input level.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>efficiency</strong> (<em>float</em>) – The efficiency level to filter the dataframe.</p></li>
+<li><p><strong>seq</strong> (<em>Bio.Seq</em>) – The nucleotide sequence.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If the given sequence doesn’t have replacing sequence with efficiency lower
 than the input efficiency level.</p>
 </dd>
-</dl>
-<dl class="simple">
-<dt>Bio.Seq</dt><dd><p>Nucleotide sequence with lower efficiency level</p>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Nucleotide sequence with lower efficiency level.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Bio.Seq</p>
 </dd>
 </dl>
-<p>“””</p>
-<p>possible_seq_df = self.filtered_sequence(efficiency, self.master_df)</p>
-</dd>
-</dl>
-<blockquote>
-<div><p>Exploratory analysis</p>
-</div></blockquote>
-<p>‘’’</p>
-</dd>
-</dl>
+</dd></dl>
+
+</section>
+<hr class="docutils" />
+<section id="sample-usage">
+<h2>Sample Usage<a class="headerlink" href="#sample-usage" title="Permalink to this heading">#</a></h2>
+<p>Here’s an example of how to use the SemperRecode class:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Import the module</span>
+<span class="kn">from</span> <span class="nn">semper</span> <span class="kn">import</span> <span class="n">SemperRecode</span>
+
+<span class="c1"># Create a SemperRecode object with the user input sequence</span>
+<span class="n">user_sequence</span> <span class="o">=</span> <span class="s2">&quot;ATGCATCGATCGATCG&quot;</span>
+<span class="n">semper_obj</span> <span class="o">=</span> <span class="n">SemperRecode</span><span class="p">(</span><span class="n">user_sequence</span><span class="p">)</span>
+
+<span class="c1"># Process the sequence to obtain a modified sequence with lower efficiency</span>
+<span class="n">modified_sequence</span> <span class="o">=</span> <span class="n">semper_obj</span><span class="o">.</span><span class="n">process_sequence</span><span class="p">()</span>
+
+<span class="c1"># Convert the modified sequence to FASTA format and export it to a file</span>
+<span class="n">semper_obj</span><span class="o">.</span><span class="n">to_fasta</span><span class="p">(</span><span class="n">modified_sequence</span><span class="p">,</span> <span class="s2">&quot;modified_sequence&quot;</span><span class="p">)</span>
+
+<span class="c1"># Find sequences with lower efficiency in the dataframe</span>
+<span class="n">filtered_df</span> <span class="o">=</span> <span class="n">semper_obj</span><span class="o">.</span><span class="n">filtered_sequence_eff</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+
+<span class="c1"># Find a nucleotide sequence with lower efficiency</span>
+<span class="n">lower_eff_sequence</span> <span class="o">=</span> <span class="n">semper_obj</span><span class="o">.</span><span class="n">find_lower_eff_sequence</span><span class="p">(</span><span class="mf">0.4</span><span class="p">,</span> <span class="s2">&quot;ATGCTAGCTAGCTAG&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 </section>
 </section>
 
@@ -684,12 +535,12 @@ than the input efficiency level.</p>
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="contributing.html">
+          <a class="next-page" href="modules.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">Contributing</div>
+                <div class="title">semper-recode</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
@@ -735,7 +586,30 @@ than the input efficiency level.</p>
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">Usage</a><ul>
-<li><a class="reference internal" href="#raises">Raises</a></li>
+<li><a class="reference internal" href="#global-variables">Global Variables</a><ul>
+<li><a class="reference internal" href="#START_CODON"><code class="docutils literal notranslate"><span class="pre">START_CODON</span></code></a></li>
+<li><a class="reference internal" href="#PATH"><code class="docutils literal notranslate"><span class="pre">PATH</span></code></a></li>
+<li><a class="reference internal" href="#MASTER_DF"><code class="docutils literal notranslate"><span class="pre">MASTER_DF</span></code></a></li>
+<li><a class="reference internal" href="#CODON_LIST"><code class="docutils literal notranslate"><span class="pre">CODON_LIST</span></code></a></li>
+<li><a class="reference internal" href="#CODON_DICT"><code class="docutils literal notranslate"><span class="pre">CODON_DICT</span></code></a></li>
+<li><a class="reference internal" href="#FOUR_LETTERS_CODE"><code class="docutils literal notranslate"><span class="pre">FOUR_LETTERS_CODE</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#functions">Functions</a><ul>
+<li><a class="reference internal" href="#process_sequence"><code class="docutils literal notranslate"><span class="pre">process_sequence()</span></code></a></li>
+<li><a class="reference internal" href="#modify_TIS_in_frame"><code class="docutils literal notranslate"><span class="pre">modify_TIS_in_frame()</span></code></a></li>
+<li><a class="reference internal" href="#find_in_frame"><code class="docutils literal notranslate"><span class="pre">find_in_frame()</span></code></a></li>
+<li><a class="reference internal" href="#efficiency_level"><code class="docutils literal notranslate"><span class="pre">efficiency_level()</span></code></a></li>
+<li><a class="reference internal" href="#modify_TIS_out_of_frame"><code class="docutils literal notranslate"><span class="pre">modify_TIS_out_of_frame()</span></code></a></li>
+<li><a class="reference internal" href="#return_key"><code class="docutils literal notranslate"><span class="pre">return_key()</span></code></a></li>
+<li><a class="reference internal" href="#find_out_of_frame"><code class="docutils literal notranslate"><span class="pre">find_out_of_frame()</span></code></a></li>
+<li><a class="reference internal" href="#get_aa_alternative"><code class="docutils literal notranslate"><span class="pre">get_aa_alternative()</span></code></a></li>
+<li><a class="reference internal" href="#to_fasta"><code class="docutils literal notranslate"><span class="pre">to_fasta()</span></code></a></li>
+<li><a class="reference internal" href="#filtered_sequence_eff"><code class="docutils literal notranslate"><span class="pre">filtered_sequence_eff()</span></code></a></li>
+<li><a class="reference internal" href="#find_lower_eff_sequence"><code class="docutils literal notranslate"><span class="pre">find_lower_eff_sequence()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sample-usage">Sample Usage</a></li>
 </ul>
 </li>
 </ul>

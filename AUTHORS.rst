@@ -2,12 +2,11 @@
 Credits
 =======
 
-Development Lead
-----------------
+**Development Lead**
 
 * Ishaan Joshan Dev <ishaanjdev@gmail.com>
+* Gayvalin Tammy Sujaritchai <tammygayvalin@gmail.com>
 
-Contributors
-------------
+.. Contributors
+.. ------------
 
-None yet. Why not be the first?

@@ -119,6 +119,7 @@ class SemperRecode:
         None
 
         """
+
         replace_sequence = self.seq
         round = 0
 
@@ -182,7 +183,7 @@ class SemperRecode:
                 new_seq[pos-6:pos+6] = filtered["4-codons"].iloc[0]
                 
                 if(int(new_eff) == current_eff):
-                    warnings.warn(f"No sequence with lower efficiency is found for {internal_TIS_seq}, consider mutate/remove the sequence")
+                    warnings.warn(f"No sequence with lower efficiency is found for {internal_TIS_seq} at [{pos}], consider mutate/remove the sequence")
 
         return ''.join(new_seq)
 

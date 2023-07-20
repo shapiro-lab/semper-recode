@@ -10,8 +10,10 @@ Semper Recode Documentation
    usage
    modules
    contributing
+   semper_recode
    authors
    history
+   
 
 .. Indices and tables
 .. ==================
