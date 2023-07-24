@@ -99,6 +99,8 @@ class SemperRecode:
         if re.search(pattern, self.seq):
             raise ValueError("Invalid character found in the string.")
     
+        self.error_list = []
+    
     def process_sequence(self):
         """
         Uses the nucleotide sequence input through the constructor and returns the modified sequence with lower efficiency (if any).
@@ -130,7 +132,8 @@ class SemperRecode:
             replace_sequence = self.modify_TIS_out_of_frame(temp)
             round += 1
 
-        return replace_sequence
+        # Return modified sequence along with error list
+        return replace_sequence, self.error_list
 
     def modify_TIS_in_frame(self, sequence):
         '''
@@ -161,7 +164,8 @@ class SemperRecode:
             if pos != 0 and pos != len(sequence) - 3:
 
                 if pos == len(sequence) - 3:
-                    warnings.warn("There's an AUG at the end of the sequence which cannot be modified")
+                    self.raiseWarning(f"There's an AUG at the end of the sequence which cannot be modified")
+
 
                 sub_1 = ''.join(new_seq[pos-6:pos+5])
                 internal_TIS_seq = Seq(sub_1)
@@ -183,7 +187,7 @@ class SemperRecode:
                 new_seq[pos-6:pos+6] = filtered["4-codons"].iloc[0]
                 
                 if(int(new_eff) == current_eff):
-                    warnings.warn(f"No sequence with lower efficiency is found for {internal_TIS_seq} at [{pos}], consider mutate/remove the sequence")
+                    self.raiseWarning(f"No sequence with lower efficiency is found for {internal_TIS_seq} at [{pos}], consider mutate/remove the sequence")
 
         return ''.join(new_seq)
 
@@ -304,6 +308,108 @@ class SemperRecode:
 
         return ''.join(new_seq)
     
+    def case_out_of_frame(self, sequence):
+        '''
+        Takes in sequence (str) and return modified sequence
+        with lower TIS efficiency (str) using rule-based approach
+
+        Case 1: xAT Gxx
+            - 'A': {'GCA', 'GCC', 'GCG', 'GCT'}
+            - 'D': {'GAC', 'GAT'}
+            - 'E': {'GAA', 'GAG'}
+            - 'G': {'GGA', 'GGC', 'GGG', 'GGT'}
+            - 'V': {'GTA', 'GTC', 'GTG', 'GTT'}
+
+        Case 2: xxA TGx
+            - 'C': {'TGC', 'TGT'}
+            - 'W': {'TGG'}
+
+        Parameters
+        ----------
+            sequence : str
+
+        Returns
+        -------
+            modified_sequence (str)
+        '''
+
+        new_seq = list(sequence)
+        index = self.find_out_of_frame(sequence) # Get the indices of out-of-frame AUG(s)
+
+        '''
+        Iterate through sequene and modify sequence to get rid of any out-of-frame AUG(s)
+        using the index from find_out_of_frame()
+        '''
+
+        for pos in index:
+            new_aa = ''
+            # Break the it down into 2 codons according to its proper codon frame
+            start = pos - pos%3
+            first_aa = sequence[start : start + 3]
+            second_aa = sequence[start + 3 : start + 6]
+            # raise PermissionError(f"codon: {first_aa} vs {second_aa}")
+
+            # Find the amino acid of the codon
+            first_aa_key = self.return_key(first_aa)
+            second_aa_key = self.return_key(second_aa)
+
+            # Case 1: xAT Gxx
+            if first_aa[1:3] == 'AT' and second_aa[0] == 'G':
+
+                # Since there's no other codons that starts with G besides 'D','E','V','A','G', we'll always modify the first codon
+                while new_aa[1:3] != 'AT':
+                    new_aa = self.get_aa_alternative(first_aa_key)
+
+                if new_aa != '':
+                    new_seq[start : start + 3] = new_aa # Replace the first codon
+
+            # Case 2: xxA TGx
+            # There's no codon that always ends with A
+            # Try to change second codon before modifying the first codon
+            elif first_aa[2] == 'A' and second_aa[0:2] == 'TG':
+                # Raise warning if sequence cannot be modified (aka the codons will always start with TG)
+                if second_aa_key in ['C', 'W']:
+                    self.raiseWarning(f"{second_aa} at [{pos+2}] cannot be modified. Consider mutate/remove the sequence")
+                
+                if second_aa_key == '*': # The only other codon that starts with TG
+                    new_seq[start + 3 : start + 6] = 'TAA' # Replace the second codon
+
+                # Modify first codon since the 2nd codon cannot be modified
+                while new_aa[2] != 'A':
+                    new_aa = self.get_aa_alternative(first_aa_key)
+                # match first_aa_key:
+                #     case 'A':
+                #         new_aa = 'GCC'
+                #     case 'R':
+                #         new_aa = 'AGG'
+                #     case 'E':
+                #         new_aa = 'GAG'
+                #     case 'Q':
+                #         new_aa = 'CAG'
+                #     case 'G':
+                #         new_aa = 'GGC'
+                #     case 'I':
+                #         new_aa = 'ATC'
+                #     case 'L':
+                #         new_aa = 'CTG'
+                #     case 'K':
+                #         new_aa = 'AAG'
+                #     case 'P':
+                #         new_aa = 'CCC'
+                #     case 'S':
+                #         new_aa = 'AGC'
+                #     case 'T':
+                #         new_aa = 'ACC'
+                #     case 'V':
+                #         new_aa = 'GTG'
+                #     case '*':
+                #         new_aa = 'TAG'
+                
+                if new_aa != '':
+                    new_seq[start : start + 3] = new_aa # Replace the first codon
+
+        return ''.join(new_seq)          
+
     def return_key(self, codon):
         '''
         Takes in codon sequence and return the key (str) which is the abbreviation of the codon
@@ -449,7 +555,25 @@ class SemperRecode:
         TGCAATGCAATG
         '''
         
-    ''' 
+    
+
+    def raiseWarning(self, error):
+        '''
+        Raise error and append errors in error_list
+
+        Parameters
+        ----------
+            error : f string
+
+        Returns
+        -------
+            warning
+
+        '''
+        error_message = error
+        self.error_list.append(error_message) # Append error message to error_list
+        warnings.warn(error_message)
+    '''
     =======================================================================================
                                         
                                         Exploratory analysis
