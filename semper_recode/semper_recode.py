@@ -56,7 +56,7 @@ Functions:
             > find_in_frame(self, sequence)
             > efficiency_level(self, sequence)
         > modify_TIS_out_of_frame(self, sequence)
-            > find_out_of_frame(self, sequence)
+            > find_out_of_frame_list_list(self, sequence)
             > find_key(self, codon)
             > get_aa_key(self, original_codon)
     > to_fasta(self, sequence, output_file_name)
@@ -126,7 +126,7 @@ class SemperRecode:
         round = 0
 
         # Loop through modify_TIS_in_frame() and modify_TIS_out_of_frame() while there is out-of-frame AUGs or the loop hasn't reached 10 times
-        while self.find_out_of_frame(replace_sequence) != [] and round < 10:
+        while self.find_out_of_frame_list_list(replace_sequence) != [] and round < 10:
             # Find modified sequence which is returned by modify_TIS_in_frame()
             temp = self.modify_TIS_in_frame(self.seq)
             replace_sequence = self.modify_TIS_out_of_frame(temp)
@@ -260,13 +260,13 @@ class SemperRecode:
         -------
             modified_sequence (str)
         '''
-
+        new_aa = ''
         new_seq = list(sequence)
-        index = self.find_out_of_frame(sequence) # Get the indices of out-of-frame AUG(s)
+        index = self.find_out_of_frame_list_list(sequence) # Get the indices of out-of-frame AUG(s)
 
         '''
         Iterate through sequene and modify sequence to get rid of any out-of-frame AUG(s)
-        using the index from find_out_of_frame()
+        using the index from find_out_of_frame_list_list()
         '''
 
         for pos in index:
@@ -274,141 +274,50 @@ class SemperRecode:
             start = pos - pos%3
             first_aa = sequence[start : start + 3]
             second_aa = sequence[start + 3 : start + 6]
-
-            '''
-            Compare which codon (the old and the new one) has the least difference in fraction value
-            When the pair is found, replace the old codon with the new codon
-            '''
-            # Get the fraction value of the first old codon
-            first_aa_key = self.return_key(first_aa)
-            first_old_val = CODON_DICT[first_aa_key][first_aa]
-
-            # Get the fraction value of the second old codon
-            second_aa_key = self.return_key(second_aa)
-            second_old_val = CODON_DICT[second_aa_key][second_aa]
-            
-            # Get the codons and fraction values of the two new codons
-            first_new_aa, first_new_val = self.get_aa_alternative(first_aa)
-            second_new_aa, second_new_val = self.get_aa_alternative(second_aa)
-
-            # Find the difference between each pair of codons (old and new)
-            first_aa_diff = abs(first_new_val - first_old_val)
-            second_aa_diff = abs(second_new_val - second_old_val)
-
-            '''
-            Replace the codon with the least fraction difference
-            i.e. if the fraction difference between the old and the new amino acids of first aa is greater,
-            replace the second codon with the new codon
-            '''
-            
-            if second_aa_diff > first_aa_diff:
-                new_seq[start : start + 3] = first_new_aa # Replace the first codon
-            else: 
-                new_seq[start + 3 : start + 6] = second_new_aa # Replace the second codon
-
-        return ''.join(new_seq)
-    
-    def case_out_of_frame(self, sequence):
-        '''
-        Takes in sequence (str) and return modified sequence
-        with lower TIS efficiency (str) using rule-based approach
-
-        Case 1: xAT Gxx
-            - 'A': {'GCA', 'GCC', 'GCG', 'GCT'}
-            - 'D': {'GAC', 'GAT'}
-            - 'E': {'GAA', 'GAG'}
-            - 'G': {'GGA', 'GGC', 'GGG', 'GGT'}
-            - 'V': {'GTA', 'GTC', 'GTG', 'GTT'}
-
-        Case 2: xxA TGx
-            - 'C': {'TGC', 'TGT'}
-            - 'W': {'TGG'}
-
-        Parameters
-        ----------
-            sequence : str
-
-        Returns
-        -------
-            modified_sequence (str)
-        '''
-
-        new_seq = list(sequence)
-        index = self.find_out_of_frame(sequence) # Get the indices of out-of-frame AUG(s)
-
-        '''
-        Iterate through sequene and modify sequence to get rid of any out-of-frame AUG(s)
-        using the index from find_out_of_frame()
-        '''
-
-        for pos in index:
-            new_aa = ''
-            # Break the it down into 2 codons according to its proper codon frame
-            start = pos - pos%3
-            first_aa = sequence[start : start + 3]
-            second_aa = sequence[start + 3 : start + 6]
-            # raise PermissionError(f"codon: {first_aa} vs {second_aa}")
 
             # Find the amino acid of the codon
             first_aa_key = self.return_key(first_aa)
             second_aa_key = self.return_key(second_aa)
 
-            # Case 1: xAT Gxx
+            # Case 1: xAT Gxx - only the second codon can be modified
             if first_aa[1:3] == 'AT' and second_aa[0] == 'G':
-
                 # Since there's no other codons that starts with G besides 'D','E','V','A','G', we'll always modify the first codon
                 while new_aa[1:3] != 'AT':
-                    new_aa = self.get_aa_alternative(first_aa_key)
+                    new_aa = self.get_alternative_codon(first_aa_key)
 
                 if new_aa != '':
                     new_seq[start : start + 3] = new_aa # Replace the first codon
 
             # Case 2: xxA TGx
-            # There's no codon that always ends with A
-            # Try to change second codon before modifying the first codon
-            elif first_aa[2] == 'A' and second_aa[0:2] == 'TG':
-                # Raise warning if sequence cannot be modified (aka the codons will always start with TG)
-                if second_aa_key in ['C', 'W']:
-                    self.raiseWarning(f"{second_aa} at [{pos+2}] cannot be modified. Consider mutate/remove the sequence")
+            elif first_aa[2] == 'A' and second_aa[0:2] == 'TG': # There's no codon that always ends with A
+                '''
+                Compare which codon (the old and the new one) has the least difference in fraction value
+                When the pair is found, replace the old codon with the new codon
+                '''
+                # Get the fraction value of the first and second old codon
+                first_old_val = CODON_DICT[first_aa_key][first_aa]
+                second_old_val = CODON_DICT[second_aa_key][second_aa]
                 
-                if second_aa_key == '*': # The only other codon that starts with TG
-                    new_seq[start + 3 : start + 6] = 'TAA' # Replace the second codon
+                # Get the codons and fraction values of the two new codons
+                first_new_codon, first_new_val = self.get_alternative_codon(first_aa)
+                second_new_codon, second_new_val = self.get_alternative_codon(second_aa)
 
-                # Modify first codon since the 2nd codon cannot be modified
-                while new_aa[2] != 'A':
-                    new_aa = self.get_aa_alternative(first_aa_key)
-                # match first_aa_key:
-                #     case 'A':
-                #         new_aa = 'GCC'
-                #     case 'R':
-                #         new_aa = 'AGG'
-                #     case 'E':
-                #         new_aa = 'GAG'
-                #     case 'Q':
-                #         new_aa = 'CAG'
-                #     case 'G':
-                #         new_aa = 'GGC'
-                #     case 'I':
-                #         new_aa = 'ATC'
-                #     case 'L':
-                #         new_aa = 'CTG'
-                #     case 'K':
-                #         new_aa = 'AAG'
-                #     case 'P':
-                #         new_aa = 'CCC'
-                #     case 'S':
-                #         new_aa = 'AGC'
-                #     case 'T':
-                #         new_aa = 'ACC'
-                #     case 'V':
-                #         new_aa = 'GTG'
-                #     case '*':
-                #         new_aa = 'TAG'
+                # Find the difference between each pair of codons (old and new)
+                first_codon_diff = abs(first_new_val - first_old_val)
+                second_codon_diff = abs(second_new_val - second_old_val)
+
+                '''
+                Replace the codon with the least fraction difference
+                i.e. if the fraction difference between the old and the new amino acids of first aa is greater,
+                replace the second codon with the new codon
+                '''
                 
-                if new_aa != '':
-                    new_seq[start : start + 3] = new_aa # Replace the first codon
+                if second_codon_diff > first_codon_diff:
+                    new_seq[start : start + 3] = first_new_codon # Replace the first codon
+                else: 
+                    new_seq[start + 3 : start + 6] = second_new_codon # Replace the second codon
 
-        return ''.join(new_seq)          
+        return ''.join(new_seq)      
 
     def return_key(self, codon):
         '''
@@ -432,7 +341,7 @@ class SemperRecode:
 
         return key
     
-    def find_out_of_frame(self, sequence):
+    def find_out_of_frame_list(self, sequence):
         """
         Takes in a sequence (str) and returns a list of indices where the out-of-frame AUG codon is found.
 
@@ -463,7 +372,37 @@ class SemperRecode:
     
         return pos
 
-    def get_aa_alternative(self, original_codon):
+    def find_out_of_frame_index(self, sequence):
+        """
+        Takes in a sequence (str) and returns an integer of index where the out-of-frame AUG codon is found.
+
+        Parameters
+        ----------
+        sequence : str
+            The input sequence to search for AUG codons.
+
+        Returns
+        -------
+        pos : int
+            An integer representing the index of out-of-frame AUG codons in the sequence.
+
+        """
+        index = -1
+
+        for codon in self.start_codon:
+            index = -1
+
+            while True:
+                index = sequence.find(codon, index + 1)
+                if index == -1:
+                    break
+
+                if index%3 != 0:
+                    return index
+    
+        return None
+
+    def get_alternative_codon(self, original_codon):
         '''
         Takes in original_codon (ex: 'GCC', 'GAG', 'TCA') then return:
             1. the codon which produce the key amino acid with highest fraction (other than the original codon itself)
@@ -559,7 +498,10 @@ class SemperRecode:
 
     def raiseWarning(self, error):
         '''
-        Raise error and append errors in error_list
+        Raise error and append errors in error_list using 
+        
+        Format "error" (i - start index, j -  last index) so user can parse the list and get the index if needed
+        Ex: AUG at [2] cannot be modified. Consider mutate/remove the sequence. (0, 1)
 
         Parameters
         ----------
