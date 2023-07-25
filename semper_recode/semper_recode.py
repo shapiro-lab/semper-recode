@@ -302,16 +302,17 @@ class SemperRecode:
                 first_new_codon, first_new_val = self.get_alternative_codon(first_aa)
                 second_new_codon, second_new_val = self.get_alternative_codon(second_aa)
 
+                '''
                 # Find the difference between each pair of codons (old and new)
 
-                '''
                 Why finding the difference instead of using the codon with highest fraction value?
                 - Because we want to keep the structure and the chemical property of the amino acids chain as close
                   to the original sequence as much as we can. 
-                  
-                ***There's this theory that the rare(r) the codon (the lower the fraction value), the longer it takes to bind with 
+
+                Theory: Codon Usage Bias (also known as Codon Usage Optimization)
+                => the rare(r) the codon (the lower the fraction value), the longer it takes to bind with 
                 anti-codon during translation (which effect the way it folds -> chemical property), that's why we want to keep the
-                fraction value of the codon as close to the original codon as much as possible to not impact the behavior of the aa
+                fraction value of the codon as close to the original codon as much as possible to not impact the behavior of the polypeptide
                 '''
 
                 first_codon_diff = abs(first_new_val - first_old_val)
