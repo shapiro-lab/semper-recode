@@ -56,7 +56,7 @@ Functions:
             > find_in_frame(self, sequence)
             > efficiency_level(self, sequence)
         > modify_TIS_out_of_frame(self, sequence)
-            > find_out_of_frame_list_list(self, sequence)
+            > find_out_of_frame_list(self, sequence)
             > find_key(self, codon)
             > get_aa_key(self, original_codon)
     > to_fasta(self, sequence, output_file_name)
@@ -80,8 +80,6 @@ class SemperRecode:
             2. If input sequence contains "u" or "U"
 
         """
-        self.master_df = MASTER_DF
-        self.start_codon = START_CODON
 
         # Convert user input sequence into str, remove blank space, and capitalize the string
         self.seq = str(user_seq).replace(" ", "").upper()
@@ -126,7 +124,7 @@ class SemperRecode:
         round = 0
 
         # Loop through modify_TIS_in_frame() and modify_TIS_out_of_frame() while there is out-of-frame AUGs or the loop hasn't reached 10 times
-        while self.find_out_of_frame_list_list(replace_sequence) != [] and round < 10:
+        while self.find_out_of_frame_list(replace_sequence) != [] and round < 10:
             # Find modified sequence which is returned by modify_TIS_in_frame()
             temp = self.modify_TIS_in_frame(self.seq)
             replace_sequence = self.modify_TIS_out_of_frame(temp)
@@ -150,7 +148,7 @@ class SemperRecode:
         '''
         new_seq = list(sequence)
         index = self.find_in_frame(sequence) # Get the indices of in-frame AUG(s)
-        df = self.master_df
+        df = MASTER_DF
 
         '''
         Convert the sequence to a list (new_seq) so that's it's mutable and when we iterate through the sequence, 
@@ -187,7 +185,7 @@ class SemperRecode:
                 new_seq[pos-6:pos+6] = filtered["4-codons"].iloc[0]
                 
                 if(int(new_eff) == current_eff):
-                    self.raiseWarning(f"No sequence with lower efficiency is found for {internal_TIS_seq} at [{pos}], consider mutate/remove the sequence")
+                    self.raiseWarning(f"No sequence with lower efficiency is found for {internal_TIS_seq} at [{pos}], consider mutate/remove the sequence ({pos-6},{pos+6})")
 
         return ''.join(new_seq)
 
@@ -212,7 +210,7 @@ class SemperRecode:
         for i in range(0, len(sequence)-2, 3):
             codon = sequence[i:i+3]
 
-            if codon in self.start_codon:
+            if codon in START_CODON:
                 pos.append(i)
 
         return pos
@@ -233,7 +231,7 @@ class SemperRecode:
             being compared with the master dataframe
 
         '''
-        df = self.master_df
+        df = MASTER_DF
 
         '''
         Find the matching row in master_df with the same value in tis-sequence
@@ -260,13 +258,13 @@ class SemperRecode:
         -------
             modified_sequence (str)
         '''
-        new_aa = ''
+        
         new_seq = list(sequence)
-        index = self.find_out_of_frame_list_list(sequence) # Get the indices of out-of-frame AUG(s)
+        index = self.find_out_of_frame_list(sequence) # Get the indices of out-of-frame AUG(s)
 
         '''
         Iterate through sequene and modify sequence to get rid of any out-of-frame AUG(s)
-        using the index from find_out_of_frame_list_list()
+        using the index from find_out_of_frame_list()
         '''
 
         for pos in index:
@@ -281,12 +279,14 @@ class SemperRecode:
 
             # Case 1: xAT Gxx - only the second codon can be modified
             if first_aa[1:3] == 'AT' and second_aa[0] == 'G':
-                # Since there's no other codons that starts with G besides 'D','E','V','A','G', we'll always modify the first codon
-                while new_aa[1:3] != 'AT':
-                    new_aa = self.get_alternative_codon(first_aa_key)
+                new_codon = ''
 
-                if new_aa != '':
-                    new_seq[start : start + 3] = new_aa # Replace the first codon
+                # Since there's no other codons that starts with G besides 'D','E','V','A','G', we'll always modify the first codon
+                while new_codon[1:3] != 'AT':
+                    new_codon = self.get_alternative_codon(first_aa)
+
+                if new_codon != '':
+                    new_seq[start : start + 3] = new_codon # Replace the first codon
 
             # Case 2: xxA TGx
             elif first_aa[2] == 'A' and second_aa[0:2] == 'TG': # There's no codon that always ends with A
@@ -303,6 +303,17 @@ class SemperRecode:
                 second_new_codon, second_new_val = self.get_alternative_codon(second_aa)
 
                 # Find the difference between each pair of codons (old and new)
+
+                '''
+                Why finding the difference instead of using the codon with highest fraction value?
+                - Because we want to keep the structure and the chemical property of the amino acids chain as close
+                  to the original sequence as much as we can. 
+                  
+                ***There's this theory that the rare(r) the codon (the lower the fraction value), the longer it takes to bind with 
+                anti-codon during translation (which effect the way it folds -> chemical property), that's why we want to keep the
+                fraction value of the codon as close to the original codon as much as possible to not impact the behavior of the aa
+                '''
+
                 first_codon_diff = abs(first_new_val - first_old_val)
                 second_codon_diff = abs(second_new_val - second_old_val)
 
@@ -359,7 +370,7 @@ class SemperRecode:
         pos = []
         index = -1
 
-        for codon in self.start_codon:
+        for codon in START_CODON:
             index = -1
 
             while True:
@@ -389,7 +400,7 @@ class SemperRecode:
         """
         index = -1
 
-        for codon in self.start_codon:
+        for codon in START_CODON:
             index = -1
 
             while True:
@@ -422,10 +433,10 @@ class SemperRecode:
 
         '''
         # Find the corresponding amino acid (ex: 'A', 'R', 'N')
-        aa = self.return_key(original_codon)
+        ori_codon = self.return_key(original_codon)
 
         # Get all the possible codons which product the key (ex: ['CAC': 0.5742015169781323, 'CAT': 0.4257984830218677])
-        codons = list(CODON_DICT[aa].keys())
+        codons = list(CODON_DICT[ori_codon].keys())
         index = 0
 
         # If the codon is the same as the original one and there's an alternative, get to the next one
@@ -433,7 +444,7 @@ class SemperRecode:
             index += 1
 
         # The fraction of the new codon
-        value = CODON_DICT[aa][codons[index]]
+        value = CODON_DICT[ori_codon][codons[index]]
 
         return codons[index], value
     
@@ -538,7 +549,7 @@ class SemperRecode:
         pd.DataFrame
             A dataframe containing the filtered sequences.
         """
-        df = self.master_df
+        df = MASTER_DF
 
         filtered = df[df['efficiency'] < efficiency]
         count = filtered.shape[0]
@@ -588,7 +599,7 @@ class SemperRecode:
             Nucleotide sequence with lower efficiency level
         """
 
-        possible_seq_df = self.filtered_sequence(efficiency, self.master_df)
+        possible_seq_df = self.filtered_sequence(efficiency, MASTER_DF)
 
     ''' 
     =======================================================================================
