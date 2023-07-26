@@ -266,7 +266,7 @@ class SemperRecode:
         Iterate through sequene and modify sequence to get rid of any out-of-frame AUG(s)
         using the index from find_out_of_frame_list()
         '''
-
+        
         for pos in index:
             # Break the it down into 2 codons according to its proper codon frame
             start = pos - pos%3
@@ -324,11 +324,15 @@ class SemperRecode:
                 i.e. if the fraction difference between the old and the new amino acids of first aa is greater,
                 replace the second codon with the new codon
                 '''
-                
-                if second_codon_diff > first_codon_diff:
-                    new_seq[start : start + 3] = first_new_codon # Replace the first codon
-                else: 
+                if first_aa == first_new_codon:
                     new_seq[start + 3 : start + 6] = second_new_codon # Replace the second codon
+                elif second_aa == second_new_codon:
+                    new_seq[start : start + 3] = first_new_codon # Replace the first codon
+                else:
+                    if second_codon_diff > first_codon_diff:
+                        new_seq[start : start + 3] = first_new_codon # Replace the first codon
+                    else: 
+                        new_seq[start + 3 : start + 6] = second_new_codon # Replace the second codon
 
         return ''.join(new_seq)      
 
