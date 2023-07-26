@@ -119,17 +119,17 @@ class SemperRecode:
         None
 
         """
-
-        replace_sequence = self.seq
         round = 0
+        replace_sequence = self.seq
 
         # Loop through modify_TIS_in_frame() and modify_TIS_out_of_frame() while there is out-of-frame AUGs or the loop hasn't reached 10 times
-        while self.find_out_of_frame_list(replace_sequence) != [] and round < 10:
+        while round < 10:
             # Find modified sequence which is returned by modify_TIS_in_frame()
             temp = self.modify_TIS_in_frame(self.seq)
             replace_sequence = self.modify_TIS_out_of_frame(temp)
             round += 1
-
+        
+        print(f"modified sequence = {replace_sequence} [{len(replace_sequence)}]")
         # Return modified sequence along with error list
         return replace_sequence, self.error_list
 
@@ -279,11 +279,12 @@ class SemperRecode:
 
             # Case 1: xAT Gxx - only the second codon can be modified
             if first_aa[1:3] == 'AT' and second_aa[0] == 'G':
-                new_codon = ''
 
                 # Since there's no other codons that starts with G besides 'D','E','V','A','G', we'll always modify the first codon
-                while new_codon[1:3] != 'AT':
-                    new_codon = self.get_alternative_codon(first_aa)
+                new_codon = self.get_alternative_codon(first_aa)[0]
+
+                if new_codon[1:3] == "AT": 
+                    new_codon = self.get_alternative_codon(first_aa)[0]
 
                 if new_codon != '':
                     new_seq[start : start + 3] = new_codon # Replace the first codon
