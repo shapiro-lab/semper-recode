@@ -4,7 +4,15 @@ Semper Recode
 
 Introduction
 ------------
-SemperRecode is a Python package designed for computational biologists and genetic engineers working with gene expression modulation. This package facilitates the detection of internal start codons (TIS) within a gene sequence and allows for tuning gene expression by replacing the TIS with a sequence that minimizes expression efficiency.
+SemperRecode is a Python package designed for computational biologists and genetic engineers working with gene expression modulation. 
+This package facilitates the detection of internal translation initiation sites (TIS), composed of a start codon and adjacent nucleotides, within a gene sequence and allows for tuning gene expression by replacing the TIS with a sequence that minimizes the probability of translation initiation.
+
+.. image:: https://www.biorxiv.org/content/biorxiv/early/2023/05/26/2023.05.26.541240/F1.large.jpg
+   :alt: A) Architecture of an mRNA transcript produced by transfected 2-ORF SEMPER plasmid DNA. Cap-dependent ribosomes translate ORF 1, msfGFP[r5M], or ORF 2, mEBFP2, with frequencies dependent on the trinucleotide (NNN) upstream of each ORF. The relative strengths of the trinucleotides and TISs they represent are depicted. *** (TTTCCAT) does not contain a start codon, preventing translation of the ORF. IRES-mCherry is included to normalize fluorescence measurements. B) mEBFP2 distribution plots for constructs containing different versions of monomeric Superfolder GFP encoded in ORF 1. Removal of internal methionines from the msfGFP leads to much stronger expression of the downstream mEBFP2. Both ORFs used the strong ACC TIS (N=1, representative of four replicates). 
+   :align: center
+   :width: 370
+
+------------
 
 Features
 --------
@@ -12,6 +20,8 @@ Features
 - Identification of the TIS position and associated efficiency score.
 - Substitution of the TIS sequence with the lowest possible efficiency.
 - Optimized gene expression modulation for experimental and synthetic biology applications.
+
+------------
 
 Installation
 ------------
@@ -41,6 +51,8 @@ Alternatively
    cd SemperRecode
    pip install .
 
+------------
+
 Prerequisites
 -------------
 Before using this package, make sure you have the following dependencies installed:
@@ -61,17 +73,7 @@ or
 
    pip install -r requirements.txt
 
-After installing the package and its dependencies, you can import the required modules in your Python script as follows:
-
-.. code-block:: python
-
-   import os
-   import pickle
-   import warnings
-   import pandas as pd
-   from Bio import SeqIO
-   from Bio.Seq import Seq
-   from Bio.SeqRecord import SeqRecord
+------------
 
 To get started
 --------------
@@ -91,6 +93,8 @@ For example:
        for seq in SeqIO.parse(file, 'fasta'):
            obj = SemperRecode(seq)
            modified_seq = obj.process_sequence()
+
+------------
 
 Sample workflow
 ---------------
@@ -151,6 +155,8 @@ Sample output
    GACAAGGGCATCGTGATCGACGCCTGGGTGCGCGTGTCCCTCGTGGGAATTGAGCTGCTG
    GCCATCGAGGCCCGGATCGTGATTGCCAGCGTGGAAACCTACCTGAAGTACGCCGAGGCC
    GTGGGCCTGACACAGAGTGCTGCTGTGCCTGCTTGA
+
+------------
 
 Credits
 -------

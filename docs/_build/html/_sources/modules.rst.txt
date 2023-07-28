@@ -1,9 +1,0 @@
-semper-recode
-=============
-
-.. toctree::
-   :maxdepth: 4
-
-   semper_recode
-   setup
-   tests

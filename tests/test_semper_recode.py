@@ -14,10 +14,10 @@ def obj():
 # ================== TEST CONSTRUCTOR ==================
 
 def test_constructor_valid_sequence():
-        user_seq = "ATGCATGC"
-        recode = SemperRecode(user_seq)
-        assert isinstance(recode, SemperRecode)
-        assert recode.seq == user_seq
+    user_seq = "ATGCATGC"
+    recode = SemperRecode(user_seq)
+    assert isinstance(recode, SemperRecode)
+    assert recode.seq == user_seq
 
 def test_constructor_empty_sequence():
     with pytest.raises(TypeError):
@@ -150,16 +150,44 @@ def test_modify_TIS_with_more_than_one_AUG(obj):
     Goal: Ensure that the modification is performed correctly even when there's 2 or more AUG being present in the same TIS sequence
     """
 
-    assert obj.modify_TIS_in_frame("ATGCATGTTATGCATATGCAC") == "ATGCATGTTATGCATATGCAT" # There's 2 AUG in the second TIS sequence
+    assert obj.modify_TIS_in_frame("ATGCATGTTATGCATATGCAC") == "ATGCATGTTATGCATATGCAC" # There's 2 AUG in the second TIS sequence
     '''
     ATG | CAT | GTT | ATG | CAT | ATG | CAC
-    TIS sequences:
-        1. CATGTTATGCAT -> CATGTTATGCAC
-        --> seq = "ATGCATGTTATGCACATGCAC"
-        2. ATGCATATGCAC -> ATGCACATGCAC -> ATGCATATGCAT
-        --> seq = ATGCATGTTATGCATATGCAT
-    '''
+    in-frame AUG = [9, 15]
 
+    pos = 9:
+        orig_TIS = CATGTTATGCAT (HVMH | eff: 64)
+        new_TIS  = CATGTTATGCAC (HVMH) | eff: 64)
+        no change
+        -> seq = orig_TIS = ATGCATGTTATGCATATGCAC
+
+    pos = 15:
+        orig_TIS = ATGCATATGCAC (MHMH | eff: 65)
+        new_TIS  = ATGCATATGCAT (MHMH | eff: 65)
+        no change
+        -> seq = ATGCATGTTATGCATATGCAC
+
+    => modified_seq = ATGCATGTTATGCATATGCAC
+    '''
+    assert obj.modify_TIS_in_frame("ATGGTCTCGATGAATTATTGCATGATG") == "ATGGTGTCTATGAATTATTGTATGATG"
+    '''
+    ATG | GTC | TCG | ATG | AAT | TAT | TGC | ATG | ATG
+    in-frame AUG = [9, 21]
+
+    pos = 9:
+        orig_TIS =  GTCTCGATGAAT (VSMN | eff: 86)
+        new_TIS  =  GTGTCTATGAAT (VSMN | eff: 53)
+        changed GTCTCGATGAAT -> GTGTCTATGAAT
+        -> seq = ATGGTGTCTATGAATTATTGCATGATG
+
+    pos = 21:
+        orig_TIS =  TATTGCATGATG (YCMM | eff: 17)
+        new_TIS  =  TATTGTATGATG (MHMH | eff: 15)
+        changed TATTGCATGATG -> TATTGTATGATG
+        -> seq = ATGGTGTCTATGAATTATTGTATGATG
+
+    => modified_seq = ATGGTGTCTATGAATTATTGTATGATG
+    '''
 
 # ============= TEST GET_AA_ALTERNATIVE =============
 

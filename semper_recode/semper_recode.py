@@ -1,10 +1,10 @@
-import os
-import re
-import pickle
-import warnings
-import pandas as pd
-from Bio import SeqIO
-from Bio.Seq import Seq
+import os # Join file path
+import re # Used in search() to check if sequence contains any character other than A, T, C, G
+import pickle # Used to read codon list and codon dict from .pkl file
+import warnings # Raise error which will be appended to error_list and returned when outputting
+import pandas as pd 
+from Bio import SeqIO # Used to write fasta file (archived)
+from Bio.Seq import Seq # Translate sequence
 from Bio.SeqRecord import SeqRecord
 
 '''
@@ -50,18 +50,20 @@ FOUR_LETTERS_CODE = list(MASTER_DF['4-letters'].unique())  # Get unique four-let
 
 '''
 Functions:
-    > data_prep(self, path)
-    > process_sequence(self)
-        > modify_TIS_in_frame(self, sequence)
-            > find_in_frame(self, sequence)
-            > efficiency_level(self, sequence)
-        > modify_TIS_out_of_frame(self, sequence)
-            > find_out_of_frame_list(self, sequence)
-            > find_key(self, codon)
-            > get_aa_key(self, original_codon)
-    > to_fasta(self, sequence, output_file_name)
-    > filtered_sequence_eff(self, efficiency)
-    > find_lower_eff_sequence(self, efficiency, seq)
+    > process_sequence()
+        > modify_TIS_in_frame()
+            > find_in_frame()
+            > efficiency_level()
+        > modify_TIS_out_of_frame()
+            > find_out_of_frame_list()
+            > find_out_of_frame_index()
+            > return_key(self, codon)
+            > get_alternative_codon()
+
+Archived (Exploratory analysis)
+    > to_fasta()
+    > filtered_sequence_eff()
+    > find_lower_eff_sequence()
 '''
 
 class SemperRecode:
@@ -77,7 +79,7 @@ class SemperRecode:
         ------
         ValueError
             1. If input sequence is blank.
-            2. If input sequence contains "u" or "U"
+            2. If input sequence contains "U"
 
         """
 
@@ -89,7 +91,7 @@ class SemperRecode:
             raise ValueError("No sequence input")
         
         # Raise ValueError if user input sequence contains "u" or "U"
-        if "U" in self.seq or "u" in self.seq:
+        if "U" in self.seq:
             raise ValueError(f"U or u found in the input sequence {self.seq}")
         
         # Raise ValueError if the sequence contains any character other than A, T, C, G
@@ -103,9 +105,9 @@ class SemperRecode:
     
     def process_sequence(self):
         """
-        Uses the nucleotide sequence input through the constructor and returns the modified sequence with lower efficiency (if any).
-        Loop through modify_TIS_in_frame() and modify_TIS_out_of_frame() to ensure there's no out-of-frame internal AUG and that the
-        expressional level is the lowest it could possibly be
+        Return the modfied sequence with lower efficiency (if any) of the nucleotide sequence.
+        Loop through modify_TIS_in_frame() and modify_TIS_out_of_frame() to ensure there's no 
+        out-of-frame internal AUG and that the expressional level is the lowest possible
 
         Parameters
         ----------
@@ -123,22 +125,21 @@ class SemperRecode:
         """
         replace_sequence = self.seq
 
-        # Loop through modify_TIS_in_frame() and modify_TIS_out_of_frame() while there is out-of-frame AUGs or the loop hasn't reached 10 times
+        # Loop through modify_TIS_in_frame() and modify_TIS_out_of_frame() atleast 10 time
         while self.round <= 10:
             # Find modified sequence which is returned by modify_TIS_in_frame()
             temp = self.modify_TIS_in_frame(replace_sequence)
             replace_sequence = self.modify_TIS_out_of_frame(temp)
 
             self.round += 1
-            
         
         # Return modified sequence along with error list
         return replace_sequence, self.error_list
 
     def modify_TIS_in_frame(self, sequence):
         '''
-        Takes in sequence (str) and return modified sequence with lower TIS efficiency (str)
-        by getting all the index location of internal AUG from find_in_frame() and modify the sequence accordingly
+        Takes in sequence (str) and return modified sequence with lower TIS efficiency by getting the
+        location of internal AUG (index) from find_in_frame() and modify the TIS -6 to + 3 of each index
 
         Parameters
         ----------
@@ -146,27 +147,25 @@ class SemperRecode:
 
         Returns
         -------
-            modified_sequence (str)
+            new_seq : str
         '''
-        new_seq = list(sequence)
-        index = self.find_in_frame(sequence) # Get the indices of in-frame AUG(s)
+        index = self.find_in_frame(sequence) # Get the indices of all in-frame AUG(s)
         df = MASTER_DF
+        new_seq = list(sequence)
 
         '''
-        Convert the sequence to a list (new_seq) so that's it's mutable and when we iterate through the sequence, 
-        we can replace the TIS sequence with the modified sequence with lower efficiency according to the index
-        of AUG return by find_in_frame()
-
-        This way, we'll iterate through the updated list of sequence (new_seq) with modified sequence
+        Convert the sequence to a list and assign it to new_seq so that it's mutable and when we iterate through the sequence, 
+        we can replace the TIS sequence with the modified sequence with lower efficiency according directly.
         '''
         for pos in index:
+
             # Ignore the first and last AUG
             if pos != 0 and pos != len(sequence) - 3:
 
-                # Only in the case where the last AUG matters
-                # if pos == len(sequence) - 3:
-                #     self.raiseWarning(f"There's an AUG at the end of the sequence which cannot be modified")
-
+                '''
+                Why do we have to use ''.join?
+                Explain: Because we're iterating through a list (new_seq) which sequence is modified by the previous iteration
+                '''
                 sub_1 = ''.join(new_seq[pos-6:pos+5])
                 internal_TIS_seq = Seq(sub_1)
 
@@ -176,20 +175,22 @@ class SemperRecode:
                 # Get the current efficiency level 
                 current_eff = self.efficiency_level(internal_TIS_seq)
 
+                # Get index of the row from the master dataframe which produce the same proteins as aa4
                 filtered = df[df['4-letters'] == str(aa4)]
                 new_eff = filtered['efficiency'].iloc[0]
 
                 '''
-                Replace the designated TIS sequence with the modified sequence
                 If a new sequence with a lower efficiency is not found,
-                print a message telling the user to consider mutate/remove the sequence
+                raise warning telling the user to consider mutate/remove the sequence
+                Else, replace the designated TIS sequence with the modified sequence
                 '''
-                new_seq[pos-6:pos+6] = filtered["4-codons"].iloc[0]
                 
-                if(int(new_eff) == current_eff):
+                
+                if(int(new_eff) >= current_eff):
                     self.raiseWarning(f"No sequence with lower efficiency is found for {internal_TIS_seq} at [{pos}] (eff = {current_eff}), consider mutate/remove the sequence ({pos-6},{pos+6})")
-
-                index = self.find_in_frame(sequence)
+                else:
+                    new_seq[pos-6:pos+6] = filtered["4-codons"].iloc[0]
+                    # Only replace sequence if the new sequence has lower efficiency
 
         return ''.join(new_seq)
 
@@ -355,30 +356,10 @@ class SemperRecode:
                 if self.error_code == -1:
                     self.raiseWarning(f"Part of the sequence {first_aa}{second_aa} cannot be modified consider mutate/remove the sequence ({start},{start+6})")
 
+            index = self.find_out_of_frame_list(sequence)
+
         return ''.join(new_seq)      
 
-    def return_key(self, codon):
-        '''
-        Takes in codon sequence and return the key (str) which is the abbreviation of the codon
-
-        Parameters
-        ----------
-            codon : str
-
-        Returns
-        -------
-            key (str)
-
-        '''
-        key = ""
-
-        for char, value in CODON_LIST.items():
-            if codon in value:
-                key = char
-                break
-
-        return key
-    
     def find_out_of_frame_list(self, sequence):
         """
         Takes in a sequence (str) and returns a list of indices where the out-of-frame AUG codon is found.
@@ -440,6 +421,28 @@ class SemperRecode:
     
         return None
 
+    def return_key(self, codon):
+        '''
+        Takes in codon sequence and return the key (str) which is the abbreviation of the codon
+
+        Parameters
+        ----------
+            codon : str
+
+        Returns
+        -------
+            key (str)
+
+        '''
+        key = ""
+
+        for char, value in CODON_LIST.items():
+            if codon in value:
+                key = char
+                break
+
+        return key
+    
     def get_alternative_codon(self, original_codon):
         '''
         Takes in original_codon (ex: 'GCC', 'GAG', 'TCA') then return:
@@ -490,7 +493,34 @@ class SemperRecode:
         value = CODON_DICT[ori_codon][codons[index]]
 
         return codons[index], value
-    
+        
+    def raiseWarning(self, error):
+        '''
+        Raise error and append errors in error_list using 
+        
+        Format "error" (i - start index, j -  last index) so user can parse the list and get the index if needed
+        Ex: AUG at [2] cannot be modified. Consider mutate/remove the sequence. (0, 1)
+
+        Parameters
+        ----------
+            error : f string
+
+        Returns
+        -------
+            warning
+
+        '''
+        error_message = error
+        if self.round == 10 and error_message not in self.error_list:
+            self.error_list.append(error_message) # Append error message to error_list
+            warnings.warn(error_message)
+    '''
+    =======================================================================================
+                                        
+                                        Exploratory analysis
+
+    =======================================================================================
+    '''
     def to_fasta(self, sequence, output_file_name):
         '''
         Takes in a list of modified sequences and converts them back to FASTA format for exporting to users.
@@ -547,36 +577,7 @@ class SemperRecode:
         >Sequence3
         TGCAATGCAATG
         '''
-        
-    
 
-    def raiseWarning(self, error):
-        '''
-        Raise error and append errors in error_list using 
-        
-        Format "error" (i - start index, j -  last index) so user can parse the list and get the index if needed
-        Ex: AUG at [2] cannot be modified. Consider mutate/remove the sequence. (0, 1)
-
-        Parameters
-        ----------
-            error : f string
-
-        Returns
-        -------
-            warning
-
-        '''
-        error_message = error
-        if self.round == 10 and error_message not in self.error_list:
-            self.error_list.append(error_message) # Append error message to error_list
-            warnings.warn(error_message)
-    '''
-    =======================================================================================
-                                        
-                                        Exploratory analysis
-
-    =======================================================================================
-    '''
     def filtered_sequence_eff(self, efficiency):
         """
         Takes in efficiency level input and finds the sequences in the dataframe by filtering,
