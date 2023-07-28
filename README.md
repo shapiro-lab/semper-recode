@@ -9,7 +9,7 @@ SemperRecode is a Python package designed for computational biologists and genet
 
 SEMPER is an approach in mammalian synthetic biology that enables the expression of multiple proteins from a single transcript by leveraging the phenomenon knows as leaky ribosomal scanning. It involves placing short upstream open reading frames (uORFs) before genes of interest (GOIs) to divert ribosome flux and control the translation of downstream proteins. By varying the initiation strength of each uORF, SEMPER allows tunable and user-determined expression levels of multiple proteins. Compared to other methods like IRES or self-cleaving peptides (such as P2A), SEMPER offers compact genetic constructs without fusion proteins or reduced downstream expression. This versatile tool opens up new possibilities for engineering functional multimeric protein complexes and complex genetic circuits in mammalian cells.
 
-
+&nbsp;
 
 ## Features
 
@@ -18,7 +18,7 @@ SEMPER is an approach in mammalian synthetic biology that enables the expression
 - Substitution of the TIS sequence with the lowest possible efficiency.
 - Optimized gene expression modulation for experimental and synthetic biology applications.
 
-
+&nbsp;
 
 ## Installation
 
@@ -48,7 +48,7 @@ cd SemperRecode
 pip install .
 ```
 
-
+&nbsp;
 
 ## Prerequisites
 
@@ -70,8 +70,6 @@ or
 pip install -r requirements.txt
 ```
 
-***
-
 ## To get started
 **Parse .fasta file sequence by sequence**
 
@@ -88,7 +86,6 @@ with open("tests/sample_file/sample_file_inputs.fasta", 'r') as file:
         obj = SemperRecode(seq)
         modified_seq = obj.process_sequence()
 ```
-
 
 ## Sample workflow
 
