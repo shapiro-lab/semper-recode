@@ -8,16 +8,21 @@ Usage
     :members:
 
 **Overview:**
-    - :func:`data_prep`
     - :func:`process_sequence`
         - :func:`modify_TIS_in_frame`
             - :func:`find_in_frame`
             - :func:`efficiency_level`
         - :func:`modify_TIS_out_of_frame`
-            - :func:`find_out_of_frame`
-            - :func:`get_aa_alternative`
-    - :func:`to_fasta`
+            - :func:`find_out_of_frame_list`
+            - :func:`find_out_of_frame_index`
+            - :func:`return_key`
+            - :func:`get_alternative_codon`
 
+Archived
+    - :func:`to_fasta`
+    - :func:`filtered_sequence_eff`
+    - :func:`find_lower_eff_sequence`
+'''
 ------------
 
 Global Variables
@@ -25,11 +30,7 @@ Global Variables
 
     .. py:data:: START_CODON
 
-        The start codon list.
-
-    .. py:data:: PATH
-
-        The path to the data folder.
+        A list of canonical start codons. Future versions may include non-canonical start codons and will be appended to this list.
 
     .. py:data:: MASTER_DF
 

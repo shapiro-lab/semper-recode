@@ -42,7 +42,7 @@ Alternatively
 
 ```shell
 git clone https://github.com/ishaanjdev/semper-recode.git
-cd SemperRecode
+pip install -r requirements.txt
 pip install .
 ```
 
@@ -57,12 +57,6 @@ Before using this package, make sure you have the following dependencies install
 You can install these dependencies using pip:
 
 ```shell
-pip install pandas biopython pytest
-```
-
-or
-
-```shell
 pip install -r requirements.txt
 ```
 
@@ -71,17 +65,42 @@ pip install -r requirements.txt
 
 ```shell
 with open({input_file_path}, 'r') as file:
-    for seq in SeqIO.parse(file, 'fasta'): # Parsing sequence line by line
+    for seq in SeqIO.parse(file, 'fasta'): # Parsing fasta file sequence by sequence
         # Proceed with calling desired functions
 ```
 
-For example:
+Example:
 ```shell
 with open("tests/sample_file/sample_file_inputs.fasta", 'r') as file:
     for seq in SeqIO.parse(file, 'fasta'):
         obj = SemperRecode(seq)
         modified_seq = obj.process_sequence()
 ```
+
+**Convert the output into data frame (modified sequence and error list)**
+Example:
+```
+error_list, data_list  = [], []
+    
+    # Read input sequences from the FASTA file and process them using the SemperRecode class
+    with open("tests/sample_file/sample_file_inputs.fasta", 'r') as file:
+        for line in SeqIO.parse(file, 'fasta'):
+            input = str(line.seq)
+            obj = SemperRecode(input)
+            new_seq, error_list = obj.process_sequence()
+            
+            # Accumulate the processed data as dictionaries in a list
+            data = {'ID': line.id, 'sequence': new_seq, 'error': error_list}
+            data_list.append(data)
+
+    # Create a DataFrame from the list of processed data dictionaries
+    df = pd.DataFrame(data_list)
+
+    # Export the DataFrame to a CSV file
+    output_file = "tests/sample_file/sample_file_df_outputs.csv"
+    df.to_csv(output_file, index=False)
+```
+
 
 ## Sample workflow
 

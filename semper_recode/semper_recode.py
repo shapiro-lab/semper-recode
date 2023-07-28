@@ -18,18 +18,19 @@ FileNotFoundError
     If any of the required data files are not found.
 
 '''
+# A list of canonical start codons.
+# Note: Future versions may include non-canonical start codons and will be appended to this list.
 START_CODON = ['ATG']
-PATH = "data/" 
 
 # Master dataframe
-MASTER_DF_PATH = os.path.join(PATH, 'master_df_os_2023.csv')
+MASTER_DF_PATH = 'data/master_df_os_2023.csv'
 if not os.path.exists(MASTER_DF_PATH):
     raise FileNotFoundError(f"Master dataframe file not found: {MASTER_DF_PATH}")
         
-MASTER_DF = pd.read_csv(PATH + 'master_df_os_2023.csv')
+MASTER_DF = pd.read_csv('data/master_df_os_2023.csv')
 
 # Load codon list
-CODON_LIST_PATH = os.path.join(PATH, 'codon_list.pkl')
+CODON_LIST_PATH = 'data/codon_list.pkl'
 if not os.path.exists(CODON_LIST_PATH):
     raise FileNotFoundError(f"Codon list (.pkl) file not found: {CODON_LIST_PATH}")
 
@@ -40,7 +41,7 @@ if CODON_LIST == {}:
     raise ValueError("codon_list is empty")
 
 # Load codon dictionary
-CODON_DICT_PATH = os.path.join(PATH, 'codon_dict.pkl')
+CODON_DICT_PATH = 'data/codon_dict.pkl'
 
 with open(CODON_DICT_PATH, 'rb') as file:
     CODON_DICT = pickle.load(file)
@@ -422,7 +423,7 @@ class SemperRecode:
 
     def return_key(self, codon):
         '''
-        Takes in codon sequence and return the key (str) which is the abbreviation of the codon
+        Takes in codon sequence and return the key (str) - amino acid
 
         Parameters
         ----------

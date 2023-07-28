@@ -4,26 +4,7 @@
 Installation
 ============
 
-
-Stable release
---------------
-
-To install SEMPER Recode, run this command in your terminal:
-
-.. code-block:: console
-
-    $ pip install semper_recode
-
-This is the preferred method to install SEMPER Recode, as it will always install the most recent stable release.
-
-If you don't have `pip`_ installed, this `Python installation guide`_ can guide
-you through the process.
-
-.. _pip: https://pip.pypa.io
-.. _Python installation guide: http://docs.python-guide.org/en/latest/starting/installation/
-
-
-From sources
+To install
 ------------
 
 The sources for SEMPER Recode can be downloaded from the `Github repo`_.
@@ -34,18 +15,4 @@ You can either clone the public repository:
 
     $ git clone git://github.com/ishaanjdev/semper_recode
 
-Or download the `tarball`_:
-
-.. code-block:: console
-
-    $ curl -OJL https://github.com/ishaanjdev/semper_recode/tarball/master
-
-Once you have a copy of the source, you can install it with:
-
-.. code-block:: console
-
-    $ python setup.py install
-
-
 .. _Github repo: https://github.com/ishaanjdev/semper_recode
-.. _tarball: https://github.com/ishaanjdev/semper_recode/tarball/master
