@@ -5,7 +5,9 @@
 SemperRecode is a Python package designed for computational biologists and genetic engineers working with gene expression modulation. This package facilitates the detection of internal start codons (TIS) within a gene sequence and allows for tuning gene expression by replacing the TIS with a sequence that minimizes expression efficiency.
 
 #### What's SEMPER?
-SEMPER (Stoichiometric Expression of Messenger Polycistrons by Eukaryotic Ribosomes) is an approach in mammalian synthetic biology that enables the expression of multiple proteins from a single transcript by leveraging leaky ribosomal scanning model. It involves placing short upstream open reading frames (uORFs) before genes of interest (GOIs) to divert ribosome flux and control the translation of downstream proteins. By varying the initiation strength of each uORF, SEMPER allows tunable and user-determined expression levels of multiple proteins. Compared to other methods like IRES or self-cleaving peptides, SEMPER offers compact genetic constructs without fusion proteins or reduced downstream expression. This versatile tool opens up new possibilities for engineering functional multimeric protein complexes and complex genetic circuits in mammalian cells.
+also known as Stoichiometric Expression of Messenger Polycistrons by Eukaryotic Ribosomes
+
+SEMPER is an approach in mammalian synthetic biology that enables the expression of multiple proteins from a single transcript by leveraging leaky ribosomal scanning model. It involves placing short upstream open reading frames (uORFs) before genes of interest (GOIs) to divert ribosome flux and control the translation of downstream proteins. By varying the initiation strength of each uORF, SEMPER allows tunable and user-determined expression levels of multiple proteins. Compared to other methods like IRES or self-cleaving peptides, SEMPER offers compact genetic constructs without fusion proteins or reduced downstream expression. This versatile tool opens up new possibilities for engineering functional multimeric protein complexes and complex genetic circuits in mammalian cells.
 
 ****
 
