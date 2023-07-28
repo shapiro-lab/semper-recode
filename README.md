@@ -1,4 +1,3 @@
-![GitHub Contributors Image](https://contrib.rocks/image?repo=ishaanjdev/semper-recode)
 # 🔬 Semper Recode
 
 ## Introduction
@@ -64,18 +63,6 @@ or
 
 ```shell
 pip install -r requirements.txt
-```
-
-After installing the package and its dependencies, you can import the required modules in your Python script as follows:
-
-```python
-import os
-import pickle
-import warnings
-import pandas as pd
-from Bio import SeqIO
-from Bio.Seq import Seq
-from Bio.SeqRecord import SeqRecord
 ```
 
 ***
