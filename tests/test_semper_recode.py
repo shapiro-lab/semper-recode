@@ -194,11 +194,14 @@ def test_modify_TIS_with_more_than_one_AUG(obj):
 def test_get_alternative_codon(obj):
     """
     Purpose: Test the `get_alternative_codon` method in the SemperRecode class.
-    Goal: Ensure that the alternative codon and its fraction are returned correctly when given the old codon and .
+    Goal: Ensure that the alternative codon and its fraction are returned correctly when given the codon.
     """
 
     aa, val = obj.get_alternative_codon("AGA")
     assert aa == "AGG" and val == 0.2134612754706659
+
+    aa, val = obj.get_alternative_codon("TGA")
+    assert aa == "TAG" and val == 0.2235323759133283
 
     aa, val = obj.get_alternative_codon("AAT")
     assert aa == "AAC" and val == 0.5184461245612413
@@ -245,9 +248,9 @@ def test_modify_TIS_out_of_frame(obj):
     assert obj.modify_TIS_out_of_frame("GCCCAATGCGCC") == "GCCCAGTGCGCC" # Out-of-frame AUG
 
     # Consecutive out-of-frame AUG
-    assert obj.modify_TIS_out_of_frame("CATGATGATGATGCC") == "CACGACGACGACGCC" # 4 consecutives type 1 out-of-frame AUG
-    assert obj.modify_TIS_out_of_frame("GCATGATGATGATGG") == "GCCTGATAGTAGTGG" # 4 consecutives type 2 out-of-frame AUG
-    # Test edge acases for cases 2, case 2
+    assert obj.modify_TIS_out_of_frame("CATGATGATGATGCC") == "CACGACGACGACGCC" # 4 consecutive type 1 out-of-frame AUG
+    assert obj.modify_TIS_out_of_frame("GCATGATGATGATGG") == "GCCTGATAGTAGTGG" # 4 consecutive type 2 out-of-frame AUG
+    assert obj.modify_TIS_out_of_frame("CTTCCATGTTATGGG") == "CTTCCCTGTTACGGG" # 2 consecutive type 2 + type 1 out-of-frame AUG
 
 # ============= TEST PROCESS_SEQUENCE =============
 

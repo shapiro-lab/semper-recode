@@ -1,3 +1,4 @@
+![GitHub Contributors Image](https://contrib.rocks/image?repo=ishaanjdev/semper-recode)
 # 🔬 Semper Recode
 
 ## Introduction

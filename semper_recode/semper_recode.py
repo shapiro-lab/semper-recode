@@ -312,7 +312,6 @@ class SemperRecode:
                     new_codon = self.get_alternative_codon(first_aa)[0]
                     new_seq[start : start + 3] = new_codon
 
-
                 else:
                     # Get the fraction value of the first and second old codon
                     first_old_val = CODON_DICT[first_aa_key][first_aa]
