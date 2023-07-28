@@ -178,12 +178,16 @@ def test_get_alternative_codon(obj):
     aa, val = obj.get_alternative_codon("CCA")
     assert aa == "CCC" and val == 0.3214351373711047
 
+    aa, val = obj.get_alternative_codon("CTG")
+    assert aa == "CTC" and val == 0.1917680920552213
+
     aa, val = obj.get_alternative_codon("TGG") # There's only 1 codon that produce W (Trp)
     assert aa == "TGG" and val == 1.0
 
     aa, val = obj.get_alternative_codon("ATG") # There's only 1 codon that produce M (Met)
     assert aa == "ATG" and val == 1.0
 
+    
 # ============= TEST RETURN_KEY =============
 
 def test_return_key(obj):
@@ -210,11 +214,11 @@ def test_modify_TIS_out_of_frame(obj):
     assert obj.modify_TIS_out_of_frame("GGGATGAATGAT") == "GGGATGAACGAT" # In-frame AUG at the start 
     assert obj.modify_TIS_out_of_frame("AGCAATGATATG") == "AGCAACGATATG" # In-frame AUG at the end 
     assert obj.modify_TIS_out_of_frame("ATGAATGATATG") == "ATGAACGATATG" # Out-of-frame AUG
-    assert obj.modify_TIS_out_of_frame("GCCCAATGCGCC") == "GCCCAATGTGCC" # Out-of-frame AUG
+    assert obj.modify_TIS_out_of_frame("GCCCAATGCGCC") == "GCCCAGTGCGCC" # Out-of-frame AUG
 
     # Consecutive out-of-frame AUG
     assert obj.modify_TIS_out_of_frame("CATGATGATGATGCC") == "CACGACGACGACGCC" # 4 consecutives type 1 out-of-frame AUG
-    assert obj.modify_TIS_out_of_frame("GCATGATGATGATGG") == "GCCTGATAATAGTGG" # 4 consecutives type 2 out-of-frame AUG
+    assert obj.modify_TIS_out_of_frame("GCATGATGATGATGG") == "GCCTGATAGTAGTGG" # 4 consecutives type 2 out-of-frame AUG
     # Test edge acases for cases 2, case 2
 
 # ============= TEST PROCESS_SEQUENCE =============

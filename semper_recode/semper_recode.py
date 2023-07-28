@@ -98,6 +98,7 @@ class SemperRecode:
             raise ValueError("Invalid character found in the string.")
     
         self.error_list = []
+        self.error_code = 0
     
     def process_sequence(self):
         """
@@ -124,12 +125,13 @@ class SemperRecode:
 
         # Loop through modify_TIS_in_frame() and modify_TIS_out_of_frame() while there is out-of-frame AUGs or the loop hasn't reached 10 times
         while round < 10:
+            if self.find_out_of_frame_list(replace_sequence) == []:
+                break
             # Find modified sequence which is returned by modify_TIS_in_frame()
-            temp = self.modify_TIS_in_frame(self.seq)
+            temp = self.modify_TIS_in_frame(replace_sequence)
             replace_sequence = self.modify_TIS_out_of_frame(temp)
             round += 1
         
-        print(f"modified sequence = {replace_sequence} [{len(replace_sequence)}]")
         # Return modified sequence along with error list
         return replace_sequence, self.error_list
 
@@ -186,6 +188,8 @@ class SemperRecode:
                 
                 if(int(new_eff) == current_eff):
                     self.raiseWarning(f"No sequence with lower efficiency is found for {internal_TIS_seq} at [{pos}], consider mutate/remove the sequence ({pos-6},{pos+6})")
+
+                index = self.find_in_frame(sequence)
 
         return ''.join(new_seq)
 
@@ -273,6 +277,8 @@ class SemperRecode:
             first_aa = sequence[start : start + 3]
             second_aa = sequence[start + 3 : start + 6]
 
+            self.error_code = 0
+
             # Find the amino acid of the codon
             first_aa_key = self.return_key(first_aa)
             second_aa_key = self.return_key(second_aa)
@@ -295,44 +301,59 @@ class SemperRecode:
                 Compare which codon (the old and the new one) has the least difference in fraction value
                 When the pair is found, replace the old codon with the new codon
                 '''
-                # Get the fraction value of the first and second old codon
-                first_old_val = CODON_DICT[first_aa_key][first_aa]
-                second_old_val = CODON_DICT[second_aa_key][second_aa]
-                
-                # Get the codons and fraction values of the two new codons
-                first_new_codon, first_new_val = self.get_alternative_codon(first_aa)
-                second_new_codon, second_new_val = self.get_alternative_codon(second_aa)
+                if second_aa_key == 'C' or second_aa_key == 'W':
+                    '''
+                    If the second aa is C or W, then we can only change the first codon
 
-                '''
-                # Find the difference between each pair of codons (old and new)
+                    'C': {'TGC': 0.5344579250795931, 'TGT': 0.4655420749204069},
+                    'W': {'TGG': 1.0},
+                    '''
+                    new_codon = self.get_alternative_codon(first_aa)[0]
+                    new_seq[start : start + 3] = new_codon
 
-                Why finding the difference instead of using the codon with highest fraction value?
-                - Because we want to keep the structure and the chemical property of the amino acids chain as close
-                  to the original sequence as much as we can. 
 
-                Theory: Codon Usage Bias (also known as Codon Usage Optimization)
-                => the rare(r) the codon (the lower the fraction value), the longer it takes to bind with 
-                anti-codon during translation (which effect the way it folds -> chemical property), that's why we want to keep the
-                fraction value of the codon as close to the original codon as much as possible to not impact the behavior of the polypeptide
-                '''
-
-                first_codon_diff = abs(first_new_val - first_old_val)
-                second_codon_diff = abs(second_new_val - second_old_val)
-
-                '''
-                Replace the codon with the least fraction difference
-                i.e. if the fraction difference between the old and the new amino acids of first aa is greater,
-                replace the second codon with the new codon
-                '''
-                if first_aa == first_new_codon:
-                    new_seq[start + 3 : start + 6] = second_new_codon # Replace the second codon
-                elif second_aa == second_new_codon:
-                    new_seq[start : start + 3] = first_new_codon # Replace the first codon
                 else:
-                    if second_codon_diff > first_codon_diff:
-                        new_seq[start : start + 3] = first_new_codon # Replace the first codon
-                    else: 
+                    # Get the fraction value of the first and second old codon
+                    first_old_val = CODON_DICT[first_aa_key][first_aa]
+                    second_old_val = CODON_DICT[second_aa_key][second_aa]
+                    
+                    # Get the codons and fraction values of the two new codons
+                    first_new_codon, first_new_val = self.get_alternative_codon(first_aa)
+                    second_new_codon, second_new_val = self.get_alternative_codon(second_aa)
+
+                    '''
+                    # Find the difference between each pair of codons (old and new)
+
+                    Why finding the difference instead of using the codon with highest fraction value?
+                    - Because we want to keep the structure and the chemical property of the amino acids chain as close
+                    to the original sequence as much as we can. 
+
+                    Theory: Codon Usage Bias (also known as Codon Usage Optimization)
+                    => the rare(r) the codon (the lower the fraction value), the longer it takes to bind with 
+                    anti-codon during translation (which effect the way it folds -> chemical property), that's why we want to keep the
+                    fraction value of the codon as close to the original codon as much as possible to not impact the behavior of the polypeptide
+                    '''
+
+                    first_codon_diff = abs(first_new_val - first_old_val)
+                    second_codon_diff = abs(second_new_val - second_old_val)
+
+                    '''
+                    Replace the codon with the least fraction difference
+                    i.e. if the fraction difference between the old and the new amino acids of first aa is greater,
+                    replace the second codon with the new codon
+                    '''
+                    if first_aa == first_new_codon:
                         new_seq[start + 3 : start + 6] = second_new_codon # Replace the second codon
+                    elif second_aa == second_new_codon:
+                        new_seq[start : start + 3] = first_new_codon # Replace the first codon
+                    else:
+                        if second_codon_diff > first_codon_diff:
+                            new_seq[start : start + 3] = first_new_codon # Replace the first codon
+                        else: 
+                            new_seq[start + 3 : start + 6] = second_new_codon # Replace the second codon
+
+                if self.error_code == -1:
+                    self.raiseWarning(f"Part of the sequence {first_aa}{second_aa} cannot be modified consider mutate/remove the sequence ({start},{start+6})")
 
         return ''.join(new_seq)      
 
@@ -445,9 +466,25 @@ class SemperRecode:
         codons = list(CODON_DICT[ori_codon].keys())
         index = 0
 
+        '''
+        If any of the following condition is met, then increase index by 1 and choose the next possible codon instead
+            1. If the alternative codon is the same as the original codon
+            2. If the alternatives and the original codon both ends with A or starts with TG (to avoid potential out-of-frame AUG)
+        
+        '''
         # If the codon is the same as the original one and there's an alternative, get to the next one
-        if codons[0] == original_codon and len(codons) > 1:
+
+        if len(codons) > 1 and codons[0] == original_codon:
             index += 1
+
+        while (original_codon[2] == 'A' and codons[index][2] == 'A') or (original_codon[1:3] == 'TG' and codons[index][1:3] == 'TG'):
+            if len(codons) > index +1:
+                index += 1
+            else:
+                self.error_code = -1;
+                break
+            
+
 
         # The fraction of the new codon
         value = CODON_DICT[ori_codon][codons[index]]
