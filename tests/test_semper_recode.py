@@ -14,20 +14,36 @@ def obj():
 # ================== TEST CONSTRUCTOR ==================
 
 def test_constructor_valid_sequence():
+    """
+    Purpose: Verify the functionality of the `SemperRecode` class constructor with a valid gene sequence.
+    Goal: Ensure that the constructor initializes a `SemperRecode` object properly with the user-provided sequence.
+    """
     user_seq = "ATGCATGC"
     recode = SemperRecode(user_seq)
     assert isinstance(recode, SemperRecode)
     assert recode.seq == user_seq
 
 def test_constructor_empty_sequence():
+    """
+    Purpose: Verify the error handling of the `SemperRecode` class constructor with an empty gene sequence.
+    Goal: Ensure that the constructor raises a `TypeError` when an empty sequence is provided as input.
+    """
     with pytest.raises(TypeError):
         SemperRecode()
 
 def test_constructor_whitespace_sequence():
+    """
+    Purpose: Verify the error handling of the `SemperRecode` class constructor with a whitespace-containing gene sequence.
+    Goal: Ensure that the constructor raises a `ValueError` when a sequence containing only whitespace is provided as input.
+    """
     with pytest.raises(ValueError):
         SemperRecode("    ")
 
 def test_constructor_blank_sequence():
+    """
+    Purpose: Verify the error handling of the `SemperRecode` class constructor with a blank gene sequence.
+    Goal: Ensure that the constructor raises a `ValueError` when a blank sequence (empty string) is provided as input.
+    """
     with pytest.raises(ValueError):
         SemperRecode("")
 
@@ -73,7 +89,7 @@ def test_find_out_of_frame_list(obj):
     assert obj.find_out_of_frame_list("AATGTATATGGCATGTTGGAT") == [1, 7]
     assert obj.find_out_of_frame_list("AATGTTTATGGCATGTTGGATATG") == [1, 7]
     assert obj.find_out_of_frame_list("ATTGTTTAGGGCCATTTGGAT") == [] # No AUG
-    assert obj.find_out_of_frame_list("AATGTTTATGGCATGTTGAT") == [1, 7] # 2 extra nucleotide
+    assert obj.find_out_of_frame_list("AATGTTTATGGCATGTTGAT") == [1, 7] # 2 extra nucleotide (partial nucleotide)
     assert obj.find_out_of_frame_list("AATGTTTATGGCCTGTTGGATATG") == [1, 7] # In-frame and out-of-frame sequence
 
 # ================== TEST FIND_OUT_OF_FRAME ==================
@@ -128,10 +144,10 @@ def test_modify_TIS_with_exist_sequence(obj):
     Goal: Ensure that the TIS modification is performed correctly for the given sequences.
     """
 
-    assert obj.modify_TIS_in_frame("CACTGCATGTTA") == "CATTGTATGCTG"  # 34 -> 12
-    assert obj.modify_TIS_in_frame("ATGCACTGCATGTTA") == "ATGCATTGTATGCTG"  # The first AUG is expected to remain the same 
-    assert obj.modify_TIS_in_frame("CACTGCATGTTAATG") == "CATTGTATGCTGATG"  # The last AUG is expected to remain the same
-    assert obj.modify_TIS_in_frame("AATGAAATGCTG") == "AATGAGATGCTG"  # 82 -> 80
+    assert obj.modify_TIS_in_frame("CACTGCATGTTA") == "CATTGTATGCTG"  # Changing efficiency from 34 -> 12
+    assert obj.modify_TIS_in_frame("ATGCACTGCATGTTA") == "ATGCATTGTATGCTG"  # Changing efficiency from 34 -> 12 + the first AUG remain the same as expected
+    assert obj.modify_TIS_in_frame("CACTGCATGTTAATG") == "CATTGTATGCTGATG"  # Changing efficiency from 34 -> 12 + the last AUG remain the same as expected
+    assert obj.modify_TIS_in_frame("AATGAAATGCTG") == "AATGAGATGCTG"  # Changing efficiency from 82 -> 80
 
 def test_modify_TIS_with_non_exist_sequence(obj):
     """

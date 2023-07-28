@@ -2,14 +2,14 @@
 
 ## Introduction
 
-SemperRecode is a Python package designed for computational biologists and genetic engineers working with gene expression modulation. This package facilitates the detection of internal start codons (TIS) within a gene sequence and allows for tuning gene expression by replacing the TIS with a sequence that minimizes expression efficiency.
+SemperRecode is a Python package designed for computational biologists and genetic engineers working with gene expression modulation. This package facilitates the detection of internal start codons in the translation initiation site (TIS) within a gene sequence and allows for tuning gene expression by replacing the TIS with a sequence that minimizes expression efficiency.
 
 ### What's SEMPER?
 `also known as Stoichiometric Expression of Messenger Polycistrons by Eukaryotic Ribosomes`
 
-SEMPER is an approach in mammalian synthetic biology that enables the expression of multiple proteins from a single transcript by leveraging leaky ribosomal scanning model. It involves placing short upstream open reading frames (uORFs) before genes of interest (GOIs) to divert ribosome flux and control the translation of downstream proteins. By varying the initiation strength of each uORF, SEMPER allows tunable and user-determined expression levels of multiple proteins. Compared to other methods like IRES or self-cleaving peptides, SEMPER offers compact genetic constructs without fusion proteins or reduced downstream expression. This versatile tool opens up new possibilities for engineering functional multimeric protein complexes and complex genetic circuits in mammalian cells.
+SEMPER is an approach in mammalian synthetic biology that enables the expression of multiple proteins from a single transcript by leveraging the phenomenon knows as leaky ribosomal scanning. It involves placing short upstream open reading frames (uORFs) before genes of interest (GOIs) to divert ribosome flux and control the translation of downstream proteins. By varying the initiation strength of each uORF, SEMPER allows tunable and user-determined expression levels of multiple proteins. Compared to other methods like IRES or self-cleaving peptides (such as P2A), SEMPER offers compact genetic constructs without fusion proteins or reduced downstream expression. This versatile tool opens up new possibilities for engineering functional multimeric protein complexes and complex genetic circuits in mammalian cells.
 
-****
+
 
 ## Features
 
@@ -18,7 +18,7 @@ SEMPER is an approach in mammalian synthetic biology that enables the expression
 - Substitution of the TIS sequence with the lowest possible efficiency.
 - Optimized gene expression modulation for experimental and synthetic biology applications.
 
-****
+
 
 ## Installation
 
@@ -28,13 +28,13 @@ SEMPER is an approach in mammalian synthetic biology that enables the expression
 git clone https://github.com/ishaanjdev/semper-recode.git
 ```
 
-2. SemperRecode can be installed via pip using the following command:
+2. SemperRecode can be installed via pip using the following command (to be implemented):
 
 ```shell
 pip install SemperRecode
 ```
 
-3. After the installation is complete, you can import the library in your Python script or interactive session by using the following statement:
+3. After the installation is complete, you can import the library in your Python script or interactive session by using the following statement (to be implemented):
 
 ```shell
 import semper_recode
@@ -48,15 +48,15 @@ cd SemperRecode
 pip install .
 ```
 
-****
+
 
 ## Prerequisites
 
 Before using this package, make sure you have the following dependencies installed:
 
-- [pandas](https://pandas.pydata.org/): A powerful data manipulation library.
+- [Pandas](https://pandas.pydata.org/): A powerful data manipulation library.
 - [Biopython](https://biopython.org/): A set of freely available tools for biological computation.
-- [pytest](https://docs.pytest.org/): A Python testing framework
+- [Pytest](https://docs.pytest.org/): A Python testing framework
 
 You can install these dependencies using pip:
 
@@ -88,7 +88,7 @@ with open("tests/sample_file/sample_file_inputs.fasta", 'r') as file:
         obj = SemperRecode(seq)
         modified_seq = obj.process_sequence()
 ```
-****
+
 
 ## Sample workflow
 
