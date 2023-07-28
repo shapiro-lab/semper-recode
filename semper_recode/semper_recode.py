@@ -99,6 +99,7 @@ class SemperRecode:
     
         self.error_list = []
         self.error_code = 0
+        self.round = 1
     
     def process_sequence(self):
         """
@@ -120,17 +121,16 @@ class SemperRecode:
         None
 
         """
-        round = 0
         replace_sequence = self.seq
 
         # Loop through modify_TIS_in_frame() and modify_TIS_out_of_frame() while there is out-of-frame AUGs or the loop hasn't reached 10 times
-        while round < 10:
-            if self.find_out_of_frame_list(replace_sequence) == []:
-                break
+        while self.round <= 10:
             # Find modified sequence which is returned by modify_TIS_in_frame()
             temp = self.modify_TIS_in_frame(replace_sequence)
             replace_sequence = self.modify_TIS_out_of_frame(temp)
-            round += 1
+
+            self.round += 1
+            
         
         # Return modified sequence along with error list
         return replace_sequence, self.error_list
@@ -163,9 +163,9 @@ class SemperRecode:
             # Ignore the first and last AUG
             if pos != 0 and pos != len(sequence) - 3:
 
-                if pos == len(sequence) - 3:
-                    self.raiseWarning(f"There's an AUG at the end of the sequence which cannot be modified")
-
+                # Only in the case where the last AUG matters
+                # if pos == len(sequence) - 3:
+                #     self.raiseWarning(f"There's an AUG at the end of the sequence which cannot be modified")
 
                 sub_1 = ''.join(new_seq[pos-6:pos+5])
                 internal_TIS_seq = Seq(sub_1)
@@ -187,7 +187,7 @@ class SemperRecode:
                 new_seq[pos-6:pos+6] = filtered["4-codons"].iloc[0]
                 
                 if(int(new_eff) == current_eff):
-                    self.raiseWarning(f"No sequence with lower efficiency is found for {internal_TIS_seq} at [{pos}], consider mutate/remove the sequence ({pos-6},{pos+6})")
+                    self.raiseWarning(f"No sequence with lower efficiency is found for {internal_TIS_seq} at [{pos}] (eff = {current_eff}), consider mutate/remove the sequence ({pos-6},{pos+6})")
 
                 index = self.find_in_frame(sequence)
 
@@ -567,8 +567,9 @@ class SemperRecode:
 
         '''
         error_message = error
-        self.error_list.append(error_message) # Append error message to error_list
-        warnings.warn(error_message)
+        if self.round == 10 and error_message not in self.error_list:
+            self.error_list.append(error_message) # Append error message to error_list
+            warnings.warn(error_message)
     '''
     =======================================================================================
                                         
