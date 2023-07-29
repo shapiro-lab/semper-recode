@@ -7,22 +7,24 @@ Usage
 .. .. automodule:: semper_recode
     :members:
 
-**Overview:**
-    - :func:`process_sequence`
-        - :func:`modify_TIS_in_frame`
-            - :func:`find_in_frame`
-            - :func:`efficiency_level`
-        - :func:`modify_TIS_out_of_frame`
-            - :func:`find_out_of_frame_list`
-            - :func:`find_out_of_frame_index`
-            - :func:`return_key`
-            - :func:`get_alternative_codon`
+Overview:
+----------------
+
+- :func:`process_sequence`
+    - :func:`modify_TIS_in_frame`
+        - :func:`find_in_frame`
+        - :func:`efficiency_level`
+    - :func:`modify_TIS_out_of_frame`
+        - :func:`find_out_of_frame_list`
+        - :func:`find_out_of_frame_index`
+        - :func:`return_key`
+        - :func:`get_alternative_codon`
 
 Archived
     - :func:`to_fasta`
     - :func:`filtered_sequence_eff`
     - :func:`find_lower_eff_sequence`
-'''
+
 ------------
 
 Global Variables
@@ -34,7 +36,7 @@ Global Variables
 
     .. py:data:: MASTER_DF
 
-        The master dataframe containing data required for the analysis.
+        The master dataframe containing data required for the analysis such as TIS sequence, efficiency level, and amino acids associated with the sequence.
 
     .. py:data:: CODON_LIST
 
@@ -55,7 +57,9 @@ Functions
 
 .. py:method:: process_sequence(self)
     
-        Uses the nucleotide sequence input through the constructor and returns the modified sequence with lower efficiency (if any).
+        Return the modified sequence with lower efficiency (if possible) of the nucleotide sequence.
+        Loop through modify_TIS_in_frame() and modify_TIS_out_of_frame() to ensure there's no 
+        out-of-frame internal AUG and that the expressional level is the lowest possible
 
     :returns: The modified sequence with lower TIS efficiency (if any).
     :rtype: str
@@ -64,8 +68,11 @@ Functions
 
 .. py:method:: modify_TIS_in_frame(self, sequence)
     
-        Takes in a sequence and returns a modified sequence with lower TIS efficiency by modifying internal AUGs in the frame.
-
+        Takes in sequence and return modified sequence with lower TIS efficiency by getting the
+        location of internal AUG (index) from find_in_frame() and modify the TIS -6 to + 3 of each index
+        by replacing the TIS sequence with the sequence with lowest possible efficiency level according 
+        to master dataframe
+        
    :param sequence: The input nucleotide sequence.
    :type sequence: str
 
@@ -76,7 +83,7 @@ Functions
 
 .. py:method:: find_in_frame(self, sequence)
     
-        Takes in a sequence and returns a list of indices where the in-frame AUG codon is found.
+        Takes in a sequence (str) and returns a list of indices where the AUG codon is found.
 
    :param sequence: The input nucleotide sequence.
    :type sequence: str
@@ -88,7 +95,7 @@ Functions
 
 .. py:method:: efficiency_level(self, sequence)
     
-        Takes in a sequence and returns the efficiency level.
+        Takes in sequence and return efficiency level
 
    :param sequence: The input nucleotide sequence.
    :type sequence: str
@@ -100,7 +107,8 @@ Functions
 
 .. py:method:: modify_TIS_out_of_frame(self, sequence)
     
-        Takes in a sequence and returns a modified sequence with lower TIS efficiency by modifying out-of-frame AUGs.
+        Takes in sequence (str) and return modified sequence
+        with lower TIS efficiency (str)
 
    :param sequence: The input nucleotide sequence.
    :type sequence: str
@@ -145,6 +153,7 @@ Functions
    :rtype: tuple
 
 ------------
+**Archived**
 
 .. py:method:: to_fasta(self, sequence, output_file_name)
 
