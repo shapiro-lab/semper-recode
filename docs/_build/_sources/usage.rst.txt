@@ -64,6 +64,13 @@ Functions
     :returns: The modified sequence with lower TIS efficiency (if any).
     :rtype: str
 
+`Example`
+    .. code-block:: python
+
+        input_seq = "ATGGTGTCCAAGGGCGAGGAACTGTTCACCGGCGTGGTGCCCATCCTGGTGGAACTGGATGGCGACGTGAACGGCC"
+        obj = SemperRecode(input_seq)
+        new_seq = obj.process_sequence()
+        
 ------------
 
 .. py:method:: modify_TIS_in_frame(self, sequence)
@@ -72,13 +79,17 @@ Functions
         location of internal AUG (index) from find_in_frame() and modify the TIS -6 to + 3 of each index
         by replacing the TIS sequence with the sequence with lowest possible efficiency level according 
         to master dataframe
-        
+
    :param sequence: The input nucleotide sequence.
    :type sequence: str
 
    :returns: The modified sequence with lower TIS efficiency.
    :rtype: str
 
+`Example`
+   .. code-block:: python
+
+        assert obj.modify_TIS_in_frame("ATGCATGTTATGCATATGCAC") == "ATGCATGTTATGCATATGCAC"
 ------------
 
 .. py:method:: find_in_frame(self, sequence)
@@ -90,6 +101,12 @@ Functions
 
    :returns: A list of integers representing the indices of in-frame AUG codons in the sequence.
    :rtype: list
+
+`Example`
+   .. code-block:: python
+
+        sample4 = "ATGGTGATCAAGAACATCCAGGTGTTCTTTATGAAAACCATCAGCAACCGGTCCATCAGCCGGGCCAAGATCAGCACCATGCCCAGACCTATG"
+        assert SemperRecode(sample4).find_in_frame(sample4) == [0, 30, 78, 90]
 
 ------------
 
@@ -103,18 +120,48 @@ Functions
    :returns: The efficiency level of the sequence.
    :rtype: int
 
+`Example`
+   .. code-block:: python
+
+        current_eff = obj.efficiency_level(internal_TIS_seq)
+
 ------------
 
 .. py:method:: modify_TIS_out_of_frame(self, sequence)
     
-        Takes in sequence (str) and return modified sequence
-        with lower TIS efficiency (str)
+        Takes in sequence and return modified sequence with lower TIS efficiency
+        depending on whether the out-of-frame AUG is case 1: xAT Gxx
+        or case 2: xxA TGx
 
    :param sequence: The input nucleotide sequence.
    :type sequence: str
 
    :returns: The modified sequence with lower TIS efficiency.
    :rtype: str
+
+------------
+
+.. py:method:: find_out_of_frame_list(self, sequence)
+    
+        Takes in a sequence and returns a list of indices where the out-of-frame AUG codon is found.
+
+   :param sequence: The input sequence to search index of AUG codons.
+   :type sequence: str
+
+   :returns: A list of integers representing the indices of out-of-frame AUG codons in the sequence.
+   :rtype: list of integers
+
+------------
+
+.. py:method:: find_out_of_frame_index(self, sequence)
+    
+        Takes in a sequence and returns an integer of index where the out-of-frame AUG codon is found.
+
+   :param sequence: The input sequence to search for AUG codons.
+   :type sequence: str
+
+   :returns: An integer representing the index of out-of-frame AUG codons in the sequence.
+   :rtype: int
 
 ------------
 
@@ -130,6 +177,23 @@ Functions
 
 ------------
 
+.. py:method:: get_alternative_codon(self, original_codon)
+    
+        Takes in original_codon (ex: 'GCC', 'GAG', 'TCA') then return:
+            1. the codon which produce the key amino acid with highest fraction (other than the original codon itself)
+            2. The fraction of that codon
+
+        Sample code: get_aa_key('GCC')
+        Output: 'GCT', 0.2301414614526459 
+
+   :param original_codon: The original codon.
+   :type codon: str
+
+   :returns: Alternative codon, fraction value of alternative codon
+   :rtype: str, int
+
+------------
+
 .. py:method:: find_out_of_frame(self, sequence)
     
         Takes in a sequence and returns a list of indices where the out-of-frame AUG codon is found.
@@ -139,18 +203,6 @@ Functions
 
    :returns: A list of integers representing the indices of out-of-frame AUG codons in the sequence.
    :rtype: list
-
-------------
-
-.. py:method:: get_aa_alternative(self, original_codon)
-    
-        Takes in an original codon and returns the codon producing the key amino acid with the highest fraction.
-
-   :param original_codon: The original codon sequence.
-   :type original_codon: str
-
-   :returns: The codon and the fraction of that codon.
-   :rtype: tuple
 
 ------------
 **Archived**
@@ -210,18 +262,15 @@ Here's an example of how to use the SemperRecode class:
    # Import the module
    from semper import SemperRecode
 
-   # Create a SemperRecode object with the user input sequence
-   user_sequence = "ATGCATCGATCGATCG"
-   semper_obj = SemperRecode(user_sequence)
+   with open("tests/sample_file/sample_inputs.fasta", 'r') as file:
+        for line in SeqIO.parse(file, 'fasta'):
+            input = str(line.seq)
+            obj = SemperRecode(input)
+            new_seq = obj.process_sequence()
+            modified_seq = SeqRecord(Seq(new_seq), id=f"{line.id}_semper_recode", description='')
+            output.append(modified_seq)
 
-   # Process the sequence to obtain a modified sequence with lower efficiency
-   modified_sequence = semper_obj.process_sequence()
+    output_file = "tests/sample_file/sample_outputs.fasta"
 
-   # Convert the modified sequence to FASTA format and export it to a file
-   semper_obj.to_fasta(modified_sequence, "modified_sequence")
-
-   # Find sequences with lower efficiency in the dataframe
-   filtered_df = semper_obj.filtered_sequence_eff(0.5)
-
-   # Find a nucleotide sequence with lower efficiency
-   lower_eff_sequence = semper_obj.find_lower_eff_sequence(0.4, "ATGCTAGCTAGCTAG")
+    with open(output_file, 'w') as file:
+      SeqIO.write(output, file, 'fasta')

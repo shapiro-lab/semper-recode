@@ -220,10 +220,10 @@
 </li>
 <li><dl class="simple">
 <dt><a class="reference internal" href="#modify_TIS_out_of_frame" title="modify_TIS_out_of_frame"><code class="xref py py-func docutils literal notranslate"><span class="pre">modify_TIS_out_of_frame()</span></code></a></dt><dd><ul>
-<li><p><code class="xref py py-func docutils literal notranslate"><span class="pre">find_out_of_frame_list()</span></code></p></li>
-<li><p><code class="xref py py-func docutils literal notranslate"><span class="pre">find_out_of_frame_index()</span></code></p></li>
+<li><p><a class="reference internal" href="#find_out_of_frame_list" title="find_out_of_frame_list"><code class="xref py py-func docutils literal notranslate"><span class="pre">find_out_of_frame_list()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#find_out_of_frame_index" title="find_out_of_frame_index"><code class="xref py py-func docutils literal notranslate"><span class="pre">find_out_of_frame_index()</span></code></a></p></li>
 <li><p><a class="reference internal" href="#return_key" title="return_key"><code class="xref py py-func docutils literal notranslate"><span class="pre">return_key()</span></code></a></p></li>
-<li><p><code class="xref py py-func docutils literal notranslate"><span class="pre">get_alternative_codon()</span></code></p></li>
+<li><p><a class="reference internal" href="#get_alternative_codon" title="get_alternative_codon"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_alternative_codon()</span></code></a></p></li>
 </ul>
 </dd>
 </dl>
@@ -299,6 +299,14 @@ out-of-frame internal AUG and that the expressional level is the lowest possible
 </dl>
 </dd></dl>
 
+<dl>
+<dt><cite>Example</cite></dt><dd><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">input_seq</span> <span class="o">=</span> <span class="s2">&quot;ATGGTGTCCAAGGGCGAGGAACTGTTCACCGGCGTGGTGCCCATCCTGGTGGAACTGGATGGCGACGTGAACGGCC&quot;</span>
+<span class="n">obj</span> <span class="o">=</span> <span class="n">SemperRecode</span><span class="p">(</span><span class="n">input_seq</span><span class="p">)</span>
+<span class="n">new_seq</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">process_sequence</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd>
+</dl>
 <hr class="docutils" />
 <dl class="py method">
 <dt class="sig sig-object py" id="modify_TIS_in_frame">
@@ -322,6 +330,12 @@ to master dataframe</p>
 </dl>
 </dd></dl>
 
+<dl>
+<dt><cite>Example</cite></dt><dd><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">assert</span> <span class="n">obj</span><span class="o">.</span><span class="n">modify_TIS_in_frame</span><span class="p">(</span><span class="s2">&quot;ATGCATGTTATGCATATGCAC&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;ATGCATGTTATGCATATGCAC&quot;</span>
+</pre></div>
+</div>
+</dd>
+</dl>
 <hr class="docutils" />
 <dl class="py method">
 <dt class="sig sig-object py" id="find_in_frame">
@@ -342,6 +356,13 @@ to master dataframe</p>
 </dl>
 </dd></dl>
 
+<dl>
+<dt><cite>Example</cite></dt><dd><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sample4</span> <span class="o">=</span> <span class="s2">&quot;ATGGTGATCAAGAACATCCAGGTGTTCTTTATGAAAACCATCAGCAACCGGTCCATCAGCCGGGCCAAGATCAGCACCATGCCCAGACCTATG&quot;</span>
+<span class="k">assert</span> <span class="n">SemperRecode</span><span class="p">(</span><span class="n">sample4</span><span class="p">)</span><span class="o">.</span><span class="n">find_in_frame</span><span class="p">(</span><span class="n">sample4</span><span class="p">)</span> <span class="o">==</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">78</span><span class="p">,</span> <span class="mi">90</span><span class="p">]</span>
+</pre></div>
+</div>
+</dd>
+</dl>
 <hr class="docutils" />
 <dl class="py method">
 <dt class="sig sig-object py" id="efficiency_level">
@@ -362,13 +383,20 @@ to master dataframe</p>
 </dl>
 </dd></dl>
 
+<dl>
+<dt><cite>Example</cite></dt><dd><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">current_eff</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">efficiency_level</span><span class="p">(</span><span class="n">internal_TIS_seq</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+</dl>
 <hr class="docutils" />
 <dl class="py method">
 <dt class="sig sig-object py" id="modify_TIS_out_of_frame">
 <span class="sig-name descname"><span class="pre">modify_TIS_out_of_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sequence</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#modify_TIS_out_of_frame" title="Permalink to this definition">#</a></dt>
 <dd><blockquote>
-<div><p>Takes in sequence (str) and return modified sequence
-with lower TIS efficiency (str)</p>
+<div><p>Takes in sequence and return modified sequence with lower TIS efficiency
+depending on whether the out-of-frame AUG is case 1: xAT Gxx
+or case 2: xxA TGx</p>
 </div></blockquote>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -379,6 +407,46 @@ with lower TIS efficiency (str)</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="py method">
+<dt class="sig sig-object py" id="find_out_of_frame_list">
+<span class="sig-name descname"><span class="pre">find_out_of_frame_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sequence</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#find_out_of_frame_list" title="Permalink to this definition">#</a></dt>
+<dd><blockquote>
+<div><p>Takes in a sequence and returns a list of indices where the out-of-frame AUG codon is found.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>sequence</strong> (<em>str</em>) – The input sequence to search index of AUG codons.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of integers representing the indices of out-of-frame AUG codons in the sequence.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list of integers</p>
+</dd>
+</dl>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="py method">
+<dt class="sig sig-object py" id="find_out_of_frame_index">
+<span class="sig-name descname"><span class="pre">find_out_of_frame_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sequence</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#find_out_of_frame_index" title="Permalink to this definition">#</a></dt>
+<dd><blockquote>
+<div><p>Takes in a sequence and returns an integer of index where the out-of-frame AUG codon is found.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>sequence</strong> (<em>str</em>) – The input sequence to search for AUG codons.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An integer representing the index of out-of-frame AUG codons in the sequence.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
 </dd>
 </dl>
 </dd></dl>
@@ -405,6 +473,34 @@ with lower TIS efficiency (str)</p>
 
 <hr class="docutils" />
 <dl class="py method">
+<dt class="sig sig-object py" id="get_alternative_codon">
+<span class="sig-name descname"><span class="pre">get_alternative_codon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">original_codon</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#get_alternative_codon" title="Permalink to this definition">#</a></dt>
+<dd><blockquote>
+<div><dl class="simple">
+<dt>Takes in original_codon (ex: ‘GCC’, ‘GAG’, ‘TCA’) then return:</dt><dd><ol class="arabic simple">
+<li><p>the codon which produce the key amino acid with highest fraction (other than the original codon itself)</p></li>
+<li><p>The fraction of that codon</p></li>
+</ol>
+</dd>
+</dl>
+<p>Sample code: get_aa_key(‘GCC’)
+Output: ‘GCT’, 0.2301414614526459</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>original_codon</strong> – The original codon.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Alternative codon, fraction value of alternative codon</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str, int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="py method">
 <dt class="sig sig-object py" id="find_out_of_frame">
 <span class="sig-name descname"><span class="pre">find_out_of_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sequence</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#find_out_of_frame" title="Permalink to this definition">#</a></dt>
 <dd><blockquote>
@@ -419,26 +515,6 @@ with lower TIS efficiency (str)</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>list</p>
-</dd>
-</dl>
-</dd></dl>
-
-<hr class="docutils" />
-<dl class="py method">
-<dt class="sig sig-object py" id="get_aa_alternative">
-<span class="sig-name descname"><span class="pre">get_aa_alternative</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">original_codon</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#get_aa_alternative" title="Permalink to this definition">#</a></dt>
-<dd><blockquote>
-<div><p>Takes in an original codon and returns the codon producing the key amino acid with the highest fraction.</p>
-</div></blockquote>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>original_codon</strong> (<em>str</em>) – The original codon sequence.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The codon and the fraction of that codon.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>tuple</p>
 </dd>
 </dl>
 </dd></dl>
@@ -517,21 +593,18 @@ than the input efficiency level.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Import the module</span>
 <span class="kn">from</span> <span class="nn">semper</span> <span class="kn">import</span> <span class="n">SemperRecode</span>
 
-<span class="c1"># Create a SemperRecode object with the user input sequence</span>
-<span class="n">user_sequence</span> <span class="o">=</span> <span class="s2">&quot;ATGCATCGATCGATCG&quot;</span>
-<span class="n">semper_obj</span> <span class="o">=</span> <span class="n">SemperRecode</span><span class="p">(</span><span class="n">user_sequence</span><span class="p">)</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;tests/sample_file/sample_inputs.fasta&quot;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+     <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">SeqIO</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="s1">&#39;fasta&#39;</span><span class="p">):</span>
+         <span class="nb">input</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">seq</span><span class="p">)</span>
+         <span class="n">obj</span> <span class="o">=</span> <span class="n">SemperRecode</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+         <span class="n">new_seq</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">process_sequence</span><span class="p">()</span>
+         <span class="n">modified_seq</span> <span class="o">=</span> <span class="n">SeqRecord</span><span class="p">(</span><span class="n">Seq</span><span class="p">(</span><span class="n">new_seq</span><span class="p">),</span> <span class="nb">id</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">line</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">_semper_recode&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+         <span class="n">output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">modified_seq</span><span class="p">)</span>
 
-<span class="c1"># Process the sequence to obtain a modified sequence with lower efficiency</span>
-<span class="n">modified_sequence</span> <span class="o">=</span> <span class="n">semper_obj</span><span class="o">.</span><span class="n">process_sequence</span><span class="p">()</span>
+ <span class="n">output_file</span> <span class="o">=</span> <span class="s2">&quot;tests/sample_file/sample_outputs.fasta&quot;</span>
 
-<span class="c1"># Convert the modified sequence to FASTA format and export it to a file</span>
-<span class="n">semper_obj</span><span class="o">.</span><span class="n">to_fasta</span><span class="p">(</span><span class="n">modified_sequence</span><span class="p">,</span> <span class="s2">&quot;modified_sequence&quot;</span><span class="p">)</span>
-
-<span class="c1"># Find sequences with lower efficiency in the dataframe</span>
-<span class="n">filtered_df</span> <span class="o">=</span> <span class="n">semper_obj</span><span class="o">.</span><span class="n">filtered_sequence_eff</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
-
-<span class="c1"># Find a nucleotide sequence with lower efficiency</span>
-<span class="n">lower_eff_sequence</span> <span class="o">=</span> <span class="n">semper_obj</span><span class="o">.</span><span class="n">find_lower_eff_sequence</span><span class="p">(</span><span class="mf">0.4</span><span class="p">,</span> <span class="s2">&quot;ATGCTAGCTAGCTAG&quot;</span><span class="p">)</span>
+ <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+   <span class="n">SeqIO</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="s1">&#39;fasta&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -608,9 +681,11 @@ than the input efficiency level.</p>
 <li><a class="reference internal" href="#find_in_frame"><code class="docutils literal notranslate"><span class="pre">find_in_frame()</span></code></a></li>
 <li><a class="reference internal" href="#efficiency_level"><code class="docutils literal notranslate"><span class="pre">efficiency_level()</span></code></a></li>
 <li><a class="reference internal" href="#modify_TIS_out_of_frame"><code class="docutils literal notranslate"><span class="pre">modify_TIS_out_of_frame()</span></code></a></li>
+<li><a class="reference internal" href="#find_out_of_frame_list"><code class="docutils literal notranslate"><span class="pre">find_out_of_frame_list()</span></code></a></li>
+<li><a class="reference internal" href="#find_out_of_frame_index"><code class="docutils literal notranslate"><span class="pre">find_out_of_frame_index()</span></code></a></li>
 <li><a class="reference internal" href="#return_key"><code class="docutils literal notranslate"><span class="pre">return_key()</span></code></a></li>
+<li><a class="reference internal" href="#get_alternative_codon"><code class="docutils literal notranslate"><span class="pre">get_alternative_codon()</span></code></a></li>
 <li><a class="reference internal" href="#find_out_of_frame"><code class="docutils literal notranslate"><span class="pre">find_out_of_frame()</span></code></a></li>
-<li><a class="reference internal" href="#get_aa_alternative"><code class="docutils literal notranslate"><span class="pre">get_aa_alternative()</span></code></a></li>
 <li><a class="reference internal" href="#to_fasta"><code class="docutils literal notranslate"><span class="pre">to_fasta()</span></code></a></li>
 <li><a class="reference internal" href="#filtered_sequence_eff"><code class="docutils literal notranslate"><span class="pre">filtered_sequence_eff()</span></code></a></li>
 <li><a class="reference internal" href="#find_lower_eff_sequence"><code class="docutils literal notranslate"><span class="pre">find_lower_eff_sequence()</span></code></a></li>
