@@ -15,8 +15,8 @@ requirements = ['Click>=7.0', ]
 test_requirements = ['pytest>=3', ]
 
 setup(
-    author="Ishaan Joshan Dev",
-    author_email='ishaanjdev@gmail.com',
+    author="Ishaan Joshan Dev & Gayvalin Tammy Sujaritchai",
+    author_email='ishaanjdev@gmail.com, tammygayvalin@gmail.com',
     python_requires='>=3.6',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
