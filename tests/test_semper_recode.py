@@ -10,6 +10,8 @@ from Bio import SeqIO
 @pytest.fixture
 def obj():
     return SemperRecode("ATGCTGATGCTAATGCGTACGTAGCTAA")
+    # Passing a default string (sequence) here in order for the test cases to run. 
+    # New sequence will be passed into each object when testing
 
 # ================== TEST CONSTRUCTOR ==================
 
