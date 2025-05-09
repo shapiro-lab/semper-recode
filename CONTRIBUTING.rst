@@ -4,18 +4,18 @@
 Contributing
 ============
 
-Contributions are welcome, and they are greatly appreciated! Every little bit
-helps, and credit will always be given.
+Contributions are welcome and greatly appreciated! Every little bit helps!
 
 You can contribute in many ways:
 
 Types of Contributions
 ----------------------
 
+
 Report Bugs
 ~~~~~~~~~~~
 
-Report bugs at https://github.com/ishaanjdev/semper_recode/issues.
+Report bugs at https://github.com/ishaanjdev/semper-recode/issues.
 
 If you are reporting a bug, please include:
 
@@ -23,29 +23,29 @@ If you are reporting a bug, please include:
 * Any details about your local setup that might be helpful in troubleshooting.
 * Detailed steps to reproduce the bug.
 
+------------
+
 Fix Bugs
 ~~~~~~~~
 
 Look through the GitHub issues for bugs. Anything tagged with "bug" and "help
-wanted" is open to whoever wants to implement it.
+wanted" is open to anyone who wants to implement it.
 
-Implement Features
-~~~~~~~~~~~~~~~~~~
-
-Look through the GitHub issues for features. Anything tagged with "enhancement"
-and "help wanted" is open to whoever wants to implement it.
+------------
 
 Write Documentation
 ~~~~~~~~~~~~~~~~~~~
 
-SEMPER Recode could always use more documentation, whether as part of the
+Semper Recode could always use more documentation, whether as part of the
 official SEMPER Recode docs, in docstrings, or even on the web in blog posts,
 articles, and such.
+
+------------
 
 Submit Feedback
 ~~~~~~~~~~~~~~~
 
-The best way to send feedback is to file an issue at https://github.com/ishaanjdev/semper_recode/issues.
+The best way to send feedback is to file an issue at https://github.com/ishaanjdev/semper-recode/issues.
 
 If you are proposing a feature:
 
@@ -54,8 +54,10 @@ If you are proposing a feature:
 * Remember that this is a volunteer-driven project, and that contributions
   are welcome :)
 
-Get Started!
 ------------
+
+Get Started!
+~~~~~~~~~~~
 
 Ready to contribute? Here's how to set up `semper_recode` for local development.
 
@@ -93,6 +95,8 @@ Ready to contribute? Here's how to set up `semper_recode` for local development.
 
 7. Submit a pull request through the GitHub website.
 
+------------
+
 Pull Request Guidelines
 -----------------------
 
@@ -106,23 +110,11 @@ Before you submit a pull request, check that it meets these guidelines:
    https://travis-ci.com/ishaanjdev/semper_recode/pull_requests
    and make sure that the tests pass for all supported Python versions.
 
+------------
+
 Tips
-----
+~~~~~~~~~~~
 
-To run a subset of tests::
+To run the test::
 
-$ pytest tests.test_semper_recode
-
-
-Deploying
----------
-
-A reminder for the maintainers on how to deploy.
-Make sure all your changes are committed (including an entry in HISTORY.rst).
-Then run::
-
-$ bump2version patch # possible: major / minor / patch
-$ git push
-$ git push --tags
-
-Travis will then deploy to PyPI if tests pass.
+$ pytest
